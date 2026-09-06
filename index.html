@@ -10,6 +10,16 @@
 <meta name="apple-mobile-web-app-title" content="Scotland">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127890;</text></svg>">
+<style>
+/* The artifact host injects this reset; reproduce it so the hosted copy and the
+   artifact copy behave identically. The browser default stylesheet already has
+   [hidden]{display:none}, so this changes nothing today -- but the page's own
+   print rule (body .seg[hidden]{display:block!important}) is written against a
+   host rule that carries !important, and the step machinery hides sections with
+   el.hidden. A divergence here shows up as "fine in the artifact, broken for
+   the person it was built for", which is the failure this wrapper must not add. */
+[hidden]:not([hidden="until-found"]){display:none!important}
+</style>
 <title>Scotland Kit List</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -840,14 +850,59 @@
     fill.style.width = (boxes.length ? (n / boxes.length) * 100 : 0) + "%";
   }
 
+  /* Absolute document position of an element. getBoundingClientRect is measured
+     from the VIEWPORT, so rect.top + the current scroll offset is correct no
+     matter what the offsetParent is. offsetTop is measured from the nearest
+     positioned ancestor instead, so it silently becomes wrong the day anything
+     above the stepper gains position:relative -- and a wrong scroll target
+     looks identical to no scroll at all. */
+  function docTop(el){
+    try{
+      var r = el.getBoundingClientRect();
+      var sy = window.pageYOffset;
+      if(typeof sy !== 'number'){
+        sy = (document.documentElement && document.documentElement.scrollTop) ||
+             (document.body && document.body.scrollTop) || 0;
+      }
+      return Math.max(0, Math.round(r.top + sy));
+    }catch(e){ return 0; }
+  }
+
+  /* Put the top of the new step at the top of the screen.
+
+     Uses the TWO-ARGUMENT scrollTo on purpose. The options-object form
+     -- scrollTo({top:y, behavior:'smooth'}) -- is SILENTLY IGNORED by iOS
+     Safari before 15.4: the call throws nothing, returns normally, and the
+     page does not move, leaving you stranded halfway down the step you just
+     finished. That was the original bug, and it is invisible on desktop.
+
+     Instant rather than smooth is also deliberate. The travel here is most of
+     a screen height; animating it is slow on a phone and reads as lag. */
+  function jumpToTop(){
+    if(!anchor) return;
+    try{ window.scrollTo(0, docTop(anchor)); }catch(e){}
+
+    /* Second pass after the browser has laid the newly-shown section out.
+       Toggling .hidden changes the document height, and a scroll issued
+       against the OLD height can be clamped short -- most likely going from
+       a long step to a short one, which is the common direction here.
+       Bounded to one frame, so it can never fight a real scroll gesture. */
+    if(window.requestAnimationFrame){
+      window.requestAnimationFrame(function(){
+        try{
+          var off = anchor.getBoundingClientRect().top;
+          if(Math.abs(off) > 2) window.scrollTo(0, docTop(anchor));
+        }catch(e){}
+      });
+    }
+  }
+
   function go(i, scroll){
     cur = Math.max(0, Math.min(segs.length - 1, i));
     segs.forEach(function(s, k){ s.hidden = (k !== cur); });
     paintRail(); paintNav();
     try{ localStorage.setItem(SKEY, String(cur)); }catch(e){}
-    if(scroll && anchor){
-      window.scrollTo({ top: anchor.offsetTop, behavior: 'smooth' });
-    }
+    if(scroll) jumpToTop();
   }
 
   nextB.addEventListener('click', function(){ go(cur + 1, true); });
