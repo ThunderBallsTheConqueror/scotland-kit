@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#EFF1EC" media="(prefers-color-scheme:light)">
+<meta name="theme-color" content="#111613" media="(prefers-color-scheme:dark)">
+<meta name="apple-mobile-web-app-title" content="Scotland">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127890;</text></svg>">
+<title>Scotland Kit List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Mono:wght@400;500&family=Karla:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --paper:#EFF1EC;
+    --card:#FFFFFF;
+    --ink:#1A231E;
+    --ink2:#4A574F;
+    --mid:#79867D;
+    --line:#DBE0D7;
+    --line2:#C9D0C4;
+    --heather:#6C3A6E;
+    --heather-ink:#6C3A6E;
+    --heather-soft:#F1E7F2;
+    --qty-on:#FFFFFF;
+    --gorse:#8A5E05;
+    --gorse-band:#F7E7B8;
+    --gorse-edge:#E0BE62;
+    --loch:#2F6C88;
+    --loch-soft:#E4EFF4;
+    --loch-edge:#A9C9D8;
+    --done:#4F7A5A;
+    --shadow:0 1px 2px rgba(26,35,30,.06), 0 6px 18px rgba(26,35,30,.05);
+    --radius:10px;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#111613;
+      --card:#191F1B;
+      --ink:#E9EEE8;
+      --ink2:#AEBAB1;
+      --mid:#84918A;
+      --line:#28322C;
+      --line2:#36423A;
+      --heather:#C99ACD;
+      --heather-ink:#C99ACD;
+      --heather-soft:#2A1D2C;
+      --qty-on:#16101A;
+      --gorse:#EDBF57;
+      --gorse-band:#33290E;
+      --gorse-edge:#6A5417;
+      --loch:#7FC1DD;
+      --loch-soft:#122630;
+      --loch-edge:#2C4C5C;
+      --done:#8FBE9B;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.28);
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#111613;
+    --card:#191F1B;
+    --ink:#E9EEE8;
+    --ink2:#AEBAB1;
+    --mid:#84918A;
+    --line:#28322C;
+    --line2:#36423A;
+    --heather:#C99ACD;
+    --heather-ink:#C99ACD;
+    --heather-soft:#2A1D2C;
+    --qty-on:#16101A;
+    --gorse:#EDBF57;
+    --gorse-band:#33290E;
+    --gorse-edge:#6A5417;
+    --loch:#7FC1DD;
+    --loch-soft:#122630;
+    --loch-edge:#2C4C5C;
+    --done:#8FBE9B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.28);
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Karla","Segoe UI",system-ui,sans-serif;
+    font-size:17px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 72px}
+
+  /* ---------- masthead ---------- */
+  .mast{padding:36px 0 20px}
+  .eyebrow{
+    font-family:"DM Mono",ui-monospace,monospace;
+    font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--heather-ink);margin:0 0 12px;
+  }
+  h1{
+    font-family:"Bricolage Grotesque","Karla",sans-serif;
+    font-weight:800;font-size:clamp(36px,8vw,58px);line-height:.98;
+    letter-spacing:-.025em;margin:0;text-wrap:balance;
+  }
+  .dek{margin:14px 0 0;max-width:60ch;color:var(--ink2);font-size:18px}
+  .dek b{color:var(--ink);font-weight:700}
+
+  /* ---------- stepper chrome ---------- */
+  .steps{
+    position:sticky;top:0;z-index:20;margin:22px -20px 0;
+    background:var(--paper);border-bottom:1px solid var(--line);
+  }
+  .meter{display:flex;align-items:center;gap:13px;padding:10px 20px 8px}
+  .meter .count{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:12.5px;
+    color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums;
+  }
+  .meter .count em{color:var(--mid);font-style:normal}
+  .track{flex:1;height:7px;border-radius:100px;background:var(--line);overflow:hidden}
+  .fill{height:100%;width:0%;background:var(--loch);border-radius:100px;transition:width .28s ease}
+  .reset{
+    font-family:"Karla",sans-serif;font-size:12.5px;color:var(--mid);
+    background:none;border:1px solid var(--line2);border-radius:100px;
+    padding:3px 11px;cursor:pointer;white-space:nowrap;
+  }
+  .reset:hover{color:var(--ink);border-color:var(--mid)}
+  .reset:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
+
+  .rail{
+    display:flex;gap:6px;padding:0 20px 10px;overflow-x:auto;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .rail::-webkit-scrollbar{display:none}
+  .rail button{
+    flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+    font-family:"DM Mono",ui-monospace,monospace;font-size:12.5px;line-height:1;
+    background:var(--card);color:var(--mid);border:1px solid var(--line2);
+    cursor:pointer;padding:0;font-variant-numeric:tabular-nums;
+    transition:background .12s,color .12s,border-color .12s;
+  }
+  .rail button:hover{border-color:var(--heather);color:var(--heather-ink)}
+  .rail button:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
+  .rail button.did{background:var(--done);border-color:var(--done);color:#fff}
+  .rail button.on{background:var(--heather);border-color:var(--heather);color:var(--qty-on)}
+
+  /* ---------- a segment ---------- */
+  .seg{padding-top:34px}
+  .seg-head{display:flex;gap:15px;align-items:baseline;margin:0 0 4px}
+  .num{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:13px;font-weight:500;
+    color:var(--heather-ink);flex:0 0 auto;padding-top:5px;
+    font-variant-numeric:tabular-nums;
+  }
+  .seg h2{
+    font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+    font-size:clamp(26px,5.6vw,36px);line-height:1.06;letter-spacing:-.022em;
+    margin:0;text-wrap:balance;
+  }
+  .why{margin:8px 0 16px 39px;color:var(--ink2);font-size:16px;max-width:58ch}
+  .why strong{color:var(--ink);font-weight:700}
+  .why + .why{margin-top:-8px}
+
+  .list{
+    margin:0 0 0 39px;padding:0;list-style:none;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+  }
+  .list li + li{border-top:1px solid var(--line)}
+  .list li.grp{
+    padding:10px 15px 8px;background:var(--paper);
+    font-family:"DM Mono",ui-monospace,monospace;font-size:10.5px;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--mid);
+  }
+
+  .item{
+    display:grid;
+    grid-template-columns:23px 34px 1fr;
+    align-items:start;column-gap:13px;row-gap:2px;
+    padding:11px 15px;cursor:pointer;
+  }
+  .item:hover{background:var(--heather-soft)}
+  .item input{position:absolute;opacity:0;width:0;height:0}
+  .box{
+    grid-column:1;grid-row:1;
+    width:23px;height:23px;border-radius:6px;margin-top:5px;
+    border:2px solid var(--line2);background:transparent;
+    position:relative;transition:background .12s,border-color .12s;
+  }
+  .box::after{
+    content:"";position:absolute;left:6px;top:2px;
+    width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;
+    transform:rotate(43deg) scale(.4);opacity:0;transition:opacity .12s,transform .12s;
+  }
+  .item input:checked ~ .box{background:var(--done);border-color:var(--done)}
+  .item input:checked ~ .box::after{opacity:1;transform:rotate(43deg) scale(1)}
+  .item input:focus-visible ~ .box{outline:2px solid var(--loch);outline-offset:2px}
+
+  .qty{
+    grid-column:2;grid-row:1;
+    width:34px;height:34px;border-radius:50%;
+    display:grid;place-items:center;
+    background:var(--heather);color:var(--qty-on);
+    font-family:"DM Mono",ui-monospace,monospace;
+    font-size:15px;font-weight:500;line-height:1;
+    font-variant-numeric:tabular-nums;
+    transition:background .12s;
+  }
+  .name{grid-column:3;grid-row:1;font-weight:500;line-height:1.35;padding-top:7px}
+  .note{
+    grid-column:3;grid-row:2;font-size:14px;color:var(--mid);
+    line-height:1.4;
+  }
+  .item input:checked ~ .name{text-decoration:line-through;color:var(--mid);text-decoration-thickness:1.5px}
+  .item input:checked ~ .qty{background:var(--line2);color:var(--mid)}
+
+  .list.noq .item{grid-template-columns:23px 1fr}
+  .list.noq .name,.list.noq .note{grid-column:2}
+
+  /* "6 x underwear" -- a multiplier needs a pill, not a circle */
+  .list.mult .item{grid-template-columns:23px 50px 1fr}
+  .list.mult .qty{width:50px;border-radius:100px}
+
+  .darks{
+    display:inline-block;font-family:"DM Mono",ui-monospace,monospace;
+    font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--gorse);border:1px solid var(--gorse-edge);
+    background:var(--gorse-band);border-radius:4px;padding:1px 6px;
+    margin-left:7px;vertical-align:1.5px;
+  }
+  .item input:checked ~ .name .darks{opacity:.45}
+  .maybe{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--mid);
+    border:1px solid var(--line2);border-radius:4px;padding:1px 6px;
+    margin-left:7px;vertical-align:1.5px;display:inline-block;
+  }
+
+  /* ---------- boxed sub-groups (case quarters, plane bags) ---------- */
+  .box-card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+  }
+  .box-card > header{padding:13px 15px 11px;border-bottom:1px solid var(--line);display:flex;gap:11px}
+  .box-card .o{
+    width:23px;height:23px;border-radius:50%;flex:0 0 auto;margin-top:1px;
+    background:var(--heather);color:var(--qty-on);display:grid;place-items:center;
+    font-family:"DM Mono",ui-monospace,monospace;font-size:12px;line-height:1;
+  }
+  .box-card h3{
+    font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:17px;
+    margin:0;line-height:1.15;letter-spacing:-.01em;
+  }
+  .box-card .k{
+    display:block;font-family:"DM Mono",ui-monospace,monospace;font-size:10.5px;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--mid);
+    margin-top:4px;font-weight:400;
+  }
+  .box-card .list{margin:0;border:0;border-radius:0;box-shadow:none;background:none}
+  .box-card .item{padding:10px 14px;column-gap:11px}
+
+  .case{margin:0 0 0 39px;display:grid;grid-template-columns:1fr;gap:11px}
+  .wheels{
+    display:flex;align-items:center;gap:11px;
+    font-family:"DM Mono",ui-monospace,monospace;font-size:10.5px;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--loch);
+  }
+  .wheels::before,.wheels::after{content:"";flex:1;height:0;border-top:2px dashed var(--loch-edge)}
+  @media (min-width:660px){
+    .case{
+      grid-template-columns:1fr 1fr;
+      grid-template-areas:"ul ur" "ll lr" "wh wh";
+    }
+    .case .ul{grid-area:ul} .case .ur{grid-area:ur}
+    .case .ll{grid-area:ll} .case .lr{grid-area:lr}
+    .case .wheels{grid-area:wh}
+  }
+  .after-case{margin:11px 0 0 39px}
+
+  .stack{margin:0 0 0 39px;display:grid;gap:11px}
+
+  /* ---------- inset cards ---------- */
+  .inset{
+    margin:0 0 14px 39px;padding:15px 17px;border-radius:var(--radius);
+    background:var(--loch-soft);border:1px solid var(--loch-edge);
+  }
+  .inset .k{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:11px;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--loch);
+    display:block;margin-bottom:8px;
+  }
+  .inset ul{margin:0;padding-left:19px;color:var(--ink2);font-size:15px}
+  .inset li{margin-bottom:2px}
+  .inset p{margin:9px 0 0;font-size:14px;color:var(--mid)}
+
+  .pending{
+    margin:0 0 14px 39px;padding:15px 17px;border-radius:var(--radius);
+    background:var(--heather-soft);border:1px dashed var(--heather);
+    font-size:15px;color:var(--ink2);
+  }
+  .pending b{color:var(--ink)}
+
+  /* ---------- intro screen ---------- */
+  .bags{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 0 39px}
+  .bag{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow);
+  }
+  .bag .k{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:11px;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--heather-ink);
+    display:block;margin-bottom:7px;
+  }
+  .bag b{
+    display:block;font-family:"Bricolage Grotesque",sans-serif;
+    font-weight:800;font-size:17px;line-height:1.15;margin-bottom:5px;
+  }
+  .bag span.d{display:block;font-size:14px;color:var(--ink2);line-height:1.4}
+  @media (max-width:660px){ .bags{grid-template-columns:1fr} }
+
+  .rule{
+    margin:16px 0 0 39px;background:var(--gorse-band);
+    border:1px solid var(--gorse-edge);border-radius:var(--radius);
+    padding:20px 22px;
+  }
+  .rule .tag{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:11.5px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--gorse);
+    display:block;margin-bottom:8px;
+  }
+  .rule h3{
+    font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+    font-size:clamp(23px,5vw,31px);line-height:1.06;letter-spacing:-.02em;
+    margin:0 0 10px;color:var(--ink);text-wrap:balance;
+  }
+  .rule p{margin:0;color:var(--ink2);max-width:56ch}
+  .rule p + p{margin-top:9px}
+
+  .route{
+    display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0 39px;padding:0;list-style:none;
+  }
+  .route li{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:12px;
+    border:1px solid var(--line2);border-radius:100px;
+    padding:4px 11px;color:var(--mid);background:var(--card);
+    white-space:nowrap;
+  }
+  .route li b{color:var(--ink);font-weight:500}
+  .route li i{color:var(--loch);font-style:normal}
+
+  /* ---------- nightly routine ---------- */
+  .steps-list{margin:0 0 0 39px;padding:0;list-style:none;display:grid;gap:14px}
+  .steps-list li{display:grid;grid-template-columns:34px 1fr;column-gap:13px;align-items:start}
+  .steps-list .s{
+    width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+    background:var(--heather);color:var(--qty-on);
+    font-family:"DM Mono",ui-monospace,monospace;font-size:15px;line-height:1;
+  }
+  .steps-list b{display:block;font-weight:700;padding-top:7px}
+  .steps-list span{display:block;font-size:15px;color:var(--ink2);line-height:1.42;margin-top:2px}
+
+  .done-msg{
+    margin:22px 0 0 39px;padding:18px 20px;border-radius:var(--radius);
+    background:var(--heather-soft);border:1px solid var(--heather);color:var(--ink);
+  }
+  .done-msg b{font-family:"Bricolage Grotesque",sans-serif;font-size:19px}
+
+  /* ---------- advance controls ---------- */
+  .nav{display:flex;gap:10px;align-items:center;margin:26px 0 0 39px}
+  .nav button{
+    font-family:"Karla",sans-serif;font-size:16px;font-weight:700;
+    border-radius:100px;cursor:pointer;padding:13px 22px;
+    border:1px solid transparent;line-height:1.2;
+  }
+  .nav .next{background:var(--heather);color:var(--qty-on);flex:1;text-align:left}
+  .nav .next:hover{filter:brightness(1.12)}
+  .nav .next span{display:block;font-weight:400;font-size:12.5px;opacity:.72;margin-top:2px}
+  .nav .back{background:none;color:var(--mid);border-color:var(--line2);flex:0 0 auto}
+  .nav .back:hover{color:var(--ink);border-color:var(--mid)}
+  .nav button:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
+  .left{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:12.5px;color:var(--mid);
+    margin:11px 0 0 41px;
+  }
+  .left:empty{display:none}
+
+  .foot{
+    margin:44px 0 0;padding-top:20px;border-top:1px solid var(--line);
+    font-size:14px;color:var(--mid);max-width:62ch;
+  }
+  .foot p{margin:0 0 8px}
+  .foot b{color:var(--ink2)}
+
+  @media (max-width:560px){
+    body{font-size:16.5px}
+    .why,.list,.inset,.pending,.bags,.rule,.route,.steps-list,.done-msg,.nav,
+    .case,.stack,.after-case{margin-left:0}
+    .left{margin-left:2px}
+    .seg-head{gap:11px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important}
+  }
+  @media print{
+    .steps,.nav{display:none}
+    /* Print every step, not just the one on screen. The host reset is
+       `[hidden]:not([hidden=until-found]){display:none!important}` -- :not()
+       takes its argument's specificity, so that is 0,2,0 and `.seg[hidden]`
+       only TIES it, winning on source order alone. `body .seg[hidden]` is
+       0,2,1 and wins outright, so this survives the host moving its reset. */
+    body .seg[hidden]{display:block !important}
+    body{background:#fff;color:#000;font-size:12px}
+    .list,.bag,.box-card{box-shadow:none}
+    .seg{break-inside:avoid;padding-top:18px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow">Carolina · 26 Sep – 9 Oct 2026 · 13 nights</p>
+    <h1>Scotland Kit List</h1>
+    <p class="dek">Ten short steps, one screen at a time. Do a step, tap <b>Next</b>, come back later — the page remembers where you got to.</p>
+  </header>
+
+  <div class="steps" id="steps">
+    <div class="meter">
+      <span class="count"><span id="n">0</span><em> packed</em></span>
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <button class="reset" id="reset" type="button">Start over</button>
+    </div>
+    <div class="rail" id="rail"></div>
+  </div>
+
+  <!-- ============ 1 ============ -->
+  <section class="seg" data-short="Your cosmetics bag">
+    <div class="seg-head"><span class="num">01</span><h2>Before you touch a bag</h2></div>
+    <p class="why">Two things decide everything else on this list. Read them once and the other ten steps make sense.</p>
+    <div class="bags">
+      <div class="bag">
+        <span class="k">Stays in the car</span>
+        <b>The suitcase</b>
+        <span class="d">Your dresser. Packed in four quarters so every item is visible from above. Opened in the trunk, never on a bed.</span>
+      </div>
+      <div class="bag">
+        <span class="k">Comes into the room</span>
+        <b>The 2 overnight bags</b>
+        <span class="d">Refilled each evening with one day's clothes and the cosmetics bag. Nothing else.</span>
+      </div>
+      <div class="bag">
+        <span class="k">Never leaves you</span>
+        <b>The 2 plane bags</b>
+        <span class="d">A big one with a little one inside it. The little one becomes your day pack for every walk in Scotland.</span>
+      </div>
+    </div>
+    <div class="rule">
+      <span class="tag">The one rule</span>
+      <h3>No white clothes. Not one.</h3>
+      <p>Clothes get washed about <b>every 4 days</b> on the trip. Anything white in the pile has to go through the machine <b>on its own separate cycle</b> — an extra hour and a half in a laundromat instead of being outside.</p>
+      <p>Darks and colors only. Navy, black, gray, green, burgundy, brown. Anything marked <span class="darks">darks only</span> later is one to check twice.</p>
+    </div>
+    <ul class="route">
+      <li><b>Edinburgh</b> 27–28 Sep · <i>rain 43%</i></li>
+      <li><b>Glasgow</b> 29 Sep · <i>48%</i></li>
+      <li><b>Fort William</b> 30 Sep · <i>65%</i></li>
+      <li><b>Isle of Skye</b> 1–3 Oct · <i>68%</i></li>
+      <li><b>Isle of Mull</b> 4–6 Oct · <i>76%</i></li>
+      <li><b>Royal Deeside</b> 7 Oct · <i>56%</i></li>
+      <li><b>Edinburgh</b> 8 Oct · <i>43%</i></li>
+    </ul>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section class="seg" data-short="Five days of clothes">
+    <div class="seg-head"><span class="num">02</span><h2>Your cosmetics bag</h2></div>
+    <p class="why">One bag for everything you put on yourself — <strong>your cosmetics bag and your wash bag are the same bag on this trip.</strong> One thing to carry in at night instead of two, and one thing to leave behind instead of two.</p>
+    <p class="why">Anything liquid goes in a sealed zip-top bag <em>inside</em> it. Cabin pressure makes bottles leak, and a leak at the bottom of a suitcase ruins everything packed under it.</p>
+    <p class="why">It lives in the suitcase and comes into the room every night. It is <em>not</em> the small kit you keep with you on the plane — that one is step 6, and a few things are deliberately duplicated between them.</p>
+    <div class="pending">
+      <b>Two of these still need a list of their own: makeup, and your skin care routine.</b> Send Rich what is actually in each and they will come back here as separate tick boxes, the way everything else on this page works.
+    </div>
+    <ul class="list">
+      <li class="grp">Already in the bag</li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Hairspray</span><span class="note">Full size is fine — it travels in the suitcase. Only a 100ml one could come in the plane bag.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Shampoo</span><span class="note">Travel size. Scottish water is very soft, so it lathers far more than you are used to — you need less than you think.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Conditioner</span><span class="note">This one take plenty of. Soft water and ten days of sea wind are hard on hair.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Toothpaste</span><span class="note">The toothbrush is just below — same bag now.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Sunscreen</span><span class="note">Not the obvious thing to pack for October, but the sun sits low all day and comes straight off the water on the Staffa and Mull boats.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Body moisturizer</span><span class="note">Wind outside, radiators inside, ten days running.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Makeup<span class="maybe">list to come</span></span><span class="note">Goes in as its own tick boxes once you send the list. A cut-down version also lives in the plane bag — that is step 6.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Skin care routine<span class="maybe">list to come</span></span><span class="note">However many steps yours runs to — send them and each one gets its own box.</span></label></li>
+
+      <li class="grp">In here too, now the wash bag is gone</li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Toothbrush</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Body wash or soap</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Deodorant</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Hairbrush or comb</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Razor and shaving kit</span></label></li>
+
+      <li class="grp">What this trip adds</li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Lip balm</span><span class="note">The most-used item on a Scottish coast trip. Wind off the sea on Mull will crack your lips in an afternoon.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Face moisturizer, heavier than you normally use</span><span class="note">As well as the body one above, not instead of it. Cold wind plus indoor heating is what does it.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Hand cream</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Clear zip-top bag for anything liquid, 100ml or under</span><span class="note">Hand-luggage rule. Anything bigger goes in the suitcase, not the plane bags — hairspray and perfume included.</span></label></li>
+    </ul>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section class="seg" data-short="The suitcase">
+    <div class="seg-head"><span class="num">03</span><h2>Count out five days of clothes</h2></div>
+    <p class="why">Not in the bag yet — <strong>on the bed, in piles you can count.</strong> Five days covers the four between washes plus one spare for the day something gets soaked at the Fairy Pools.</p>
+    <p class="why">This is the step that decides whether the suitcase is liveable. Count it now rather than guessing, because you'll only ever open it standing behind a car.</p>
+    <ul class="list mult">
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">6 ×</span><span class="name">Underwear<span class="darks">darks only</span></span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">6 ×</span><span class="name">Socks<span class="darks">darks only</span></span><span class="note">Make four of them thick walking socks. Cotton stays wet all day; wool doesn't.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">5 ×</span><span class="name">T-shirts and tops<span class="darks">darks only</span></span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">2 ×</span><span class="name">Long-sleeve layer to go over a top<span class="darks">darks only</span></span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">2 ×</span><span class="name">Thermal base-layer top<span class="darks">darks only</span></span><span class="note">Next to your skin, under everything else. Merino or synthetic, never cotton. The single thing that makes a cold day on Skye pleasant rather than something to get through.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Fleece or thick hoodie<span class="darks">darks only</span></span><span class="note">You'll live in this. Skye and Mull are cold and windy even when the sun's out.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">2 ×</span><span class="name">Pants<span class="darks">darks only</span></span><span class="note">Plus the pair you travel in. One should be a pair you don't mind getting muddy.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Thermal or warm leggings for under pants<span class="darks">darks only</span></span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">2 ×</span><span class="name">Pajamas<span class="darks">darks only</span></span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Something to wear out for dinner<span class="darks">darks only</span></span><span class="note">Nowhere on this trip is formal, but the last night in Edinburgh is worth one nice thing.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Swimsuit<span class="maybe">if you swim</span></span><span class="note">Two of the places we stay have somewhere to swim, and the Ziploc bags in the next step assume a wet one. Skip it if that is not your idea of Scotland.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Shorts<span class="maybe">optional</span></span><span class="note">Not for the weather — for sleeping in, or a gym if a hotel has one.</span></label></li>
+    </ul>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section class="seg" data-short="Digital packing">
+    <div class="seg-head"><span class="num">04</span><h2>The suitcase, in four quarters</h2></div>
+    <p class="why">Lay the suitcase open and flat with <strong>the wheel end nearest you</strong>. That end is the bottom; the far end is the top. Keep it that way round for the whole pack, and each thing gets a fixed home you can find without looking.</p>
+    <p class="why">Roll everything tight rather than folding — rolls take about a third less room, crease less, and will stand on their edge like books so you can see every item from above. <strong>Fill in the order of the numbers</strong>, bottom half first.</p>
+    <div class="case">
+      <div class="box-card ll">
+        <header><span class="o">1</span><div><h3>Lower left</h3><span class="k">Over the wheels · the heaviest things</span></div></header>
+        <ul class="list">
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Sneakers</span><span class="note">In a Ziploc, sole to sole. The single heaviest thing you're packing, so it sits right over the wheels.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Indoor shoes — slippers or slides</span><span class="note">Bagged too. Stuff socks and underwear inside both pairs; that space is free.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Dress shoes</span><span class="note">Bagged as well. The dinner outfit in step 3 needs something on your feet, and sneakers undo it.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">6</span><span class="name">Ziploc bags, gallon size</span><span class="note">Two go round the shoes. The rest are for wet swimsuits, muddy socks, a leaking bottle and the soaked rain gear after the Quiraing. The most useful non-clothing thing in the suitcase.</span></label></li>
+        </ul>
+      </div>
+      <div class="box-card lr">
+        <header><span class="o">2</span><div><h3>Lower right</h3><span class="k">Over the wheels · dense and tough</span></div></header>
+        <ul class="list">
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Rain pants</span><span class="note">Bulky and tough. Nothing in this quarter minds being sat on.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Pants and thermal leggings, rolled</span><span class="note">The heaviest fabric you're taking.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Fleece or thick hoodie</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Laundry bag, empty and flat down the side</span><span class="note">A pillowcase works. It stays in the car for the whole trip and never comes indoors.</span></label></li>
+        </ul>
+      </div>
+      <p class="wheels">Wheels along this edge</p>
+      <div class="box-card ul">
+        <header><span class="o">3</span><div><h3>Upper left</h3><span class="k">The daily clothes</span></div></header>
+        <ul class="list noq">
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Tops and long-sleeve layers, rolled on edge</span><span class="note">Standing like files in a drawer, not stacked in a pile.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Pajamas and the dinner outfit</span><span class="note">At the far end of this quarter — you need them least often.</span></label></li>
+        </ul>
+      </div>
+      <div class="box-card ur">
+        <header><span class="o">4</span><div><h3>Upper right</h3><span class="k">Small and soft · fills the gaps</span></div></header>
+        <ul class="list noq">
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Underwear and socks</span><span class="note">Whatever didn't get stuffed inside the shoes. These are your packing material — push them into every corner.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Nothing rigid in this quarter</span><span class="note">It's the one that gets squashed when the lid shuts.</span></label></li>
+        </ul>
+      </div>
+    </div>
+    <div class="box-card after-case">
+      <header><span class="o">5</span><div><h3>Then, on top of everything</h3><span class="k">Last in, first out</span></div></header>
+      <ul class="list noq">
+        <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Cosmetics bag, flat on top</span><span class="note">The one bag that leaves the car every night. It goes in last so it lifts straight out.</span></label></li>
+        <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Both overnight bags, folded flat over the whole top half</span><span class="note">They travel empty inside the suitcase and are the first thing you reach on night one.</span></label></li>
+        <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Straps done up, or the top half packed tight enough not to slump</span><span class="note">When the suitcase stands upright everything slides toward the wheels. This is the one thing that stops the clothes ending up on the shoes.</span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section class="seg" data-short="Two bags for the plane">
+    <div class="seg-head"><span class="num">05</span><h2>Digital packing</h2></div>
+    <p class="why">Bags done — this is the part that does not go in them. <strong>The downloads take hours and they need wifi</strong>, so start them running first and work through the rest of this screen while they finish.</p>
+    <p class="why">Skye and Mull have patchy signal and several of the drives have none at all. Anything that needs to load will simply not load. If it isn't downloaded, it doesn't exist on this trip.</p>
+    <div class="inset">
+      <span class="k">Rich is sending you the itinerary</span>
+      <p style="margin-top:0">He'll share the full trip from <b>TripIt</b> — every flight, hotel, ferry and booking, in order, on your phone. Install it and sign in first so the invitation has somewhere to land, then tell him which email address you used.</p>
+    </div>
+    <ul class="list">
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">TripIt installed and signed in</span><span class="note">Then tell Rich the email you signed in with — that's the address he shares the trip to.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Accept Rich's TripIt invitation</span><span class="note">The whole itinerary appears in your app. You never have to ask what's happening tomorrow.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">4</span><span class="name">Movies or TV episodes downloaded</span><span class="note">The flight out on the 26th is overnight, and there are several three-hour drives. Downloaded, not added to a watchlist.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">2</span><span class="name">Books or audiobooks downloaded</span><span class="note">Kindle and Audible both need you to tap the actual download arrow — buying it isn't enough.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Music and podcasts downloaded</span><span class="note">Make one long playlist available offline rather than trusting shuffle to work.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Phone plan sorted for the UK</span><span class="note">Roaming switched on with your carrier, or a UK eSIM bought before you fly. Sort it at home, not at the airport.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">WhatsApp installed</span><span class="note">It's what everyone in Britain uses, and it works on wifi when a text won't.</span></label></li>
+    </ul>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section class="seg" data-short="Small things">
+    <div class="seg-head"><span class="num">06</span><h2>Two bags for the plane</h2></div>
+    <p class="why">A big one with a little one <strong>inside</strong> it, so at the gate they count as one. The little one comes out on the plane, lives under the seat, and becomes your day pack for every walk in Scotland.</p>
+    <p class="why">Some of this duplicates the cosmetics bag on purpose. Those are in the car; this is the kit that gets you through a night flight and a full day without opening the suitcase.</p>
+    <div class="inset">
+      <span class="k">Rich is carrying these — don't pack them</span>
+      <ul>
+        <li>Your passport</li>
+        <li>Health insurance card</li>
+        <li>The card with emergency contact numbers</li>
+        <li>Printed copies of all tickets and bookings</li>
+        <li>Travel sickness tablets for the Staffa boat</li>
+        <li>Power bank</li>
+      </ul>
+      <p>They're covered — they're just not yours to remember. Everything else on this page is.</p>
+    </div>
+    <div class="stack">
+      <div class="box-card">
+        <header><span class="o">1</span><div><h3>The big one</h3><span class="k">Tote or duffel · the little bag goes inside it</span></div></header>
+        <ul class="list">
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Travel pillow</span><span class="note">The flight out is overnight. This is the difference between arriving at 7am able to function and not.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Towel</span><span class="note">Quick-dry if you have one. Doubles as a blanket on the plane and a seat cover in a wet car.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">The little bag, packed and zipped, sitting inside this one</span><span class="note">Two bags going through the gate as one.</span></label></li>
+        </ul>
+      </div>
+      <div class="box-card">
+        <header><span class="o">2</span><div><h3>The little one</h3><span class="k">Under the seat · then your day pack all trip</span></div></header>
+        <ul class="list">
+          <li class="grp">On you at all times</li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Phone</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Phone charging cable</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Wall charger or plug block</span><span class="note">Bring this one in here rather than in the suitcase — so you can charge at the gate on the way home.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Headphones</span><span class="note">The reason you did step 5.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Credit card, plus a second one kept somewhere separate</span><span class="note">Tell the bank you'll be in the UK before you fly, or the first gas station declines you.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Driver's license</span><span class="note">Photo ID for the ferries and anywhere that asks.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Some cash in pounds</span><span class="note">A few island parking lots and honesty boxes take coins only.</span></label></li>
+
+          <li class="grp">Health — never in the hold</li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Prescription medicines, in the original labelled boxes</span><span class="note">Labelled boxes matter at the border.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Supplements</span><span class="note">Your usual daily ones — the ones you'd notice missing after three days.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Digestive enzymes</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Magnesium</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Sleep gummies</span><span class="note">Overnight flight eastbound, five hours ahead. Worth taking as the lights go down, not at 3am.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">6</span><span class="name">Hydration packs</span><span class="note">Electrolyte sachets. Cabin air is drier than a desert and it's the main reason you land feeling awful.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Hand sanitiser</span><span class="note">100ml or under, in the clear bag.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Tissues</span></label></li>
+
+          <li class="grp">The refresh kit — a duplicate of the cosmetics bag on purpose</li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Lip products</span><span class="note">A cabin at altitude and a Scottish coast wind do the same thing to your lips.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Makeup — just what you'd want on landing</span><span class="note">Not the whole bag. That one's in the suitcase.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Small mirror</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Tweezers</span><span class="note">Allowed in hand luggage.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Comb</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Flossers</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Gum</span><span class="note">For the descent into Edinburgh as much as anything.</span></label></li>
+
+          <li class="grp">A change of the two things that matter</li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Spare socks<span class="darks">darks only</span></span><span class="note">Thick ones. Plane floors are cold and this is the single best thing in the bag.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Spare undergarments<span class="darks">darks only</span></span><span class="note">If the suitcase goes missing you have a day. These come out of the count of six in step 3.</span></label></li>
+
+          <li class="grp">Food and water</li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Yeti or insulated bottle, empty through security</span><span class="note">Fill it the other side. Scottish tap water is excellent everywhere on this route.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Nuts</span><span class="note">The long drives are where you'll want these, not the plane.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Chocolate</span></label></li>
+
+          <li class="grp">Weather and the walks</li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Hat</span><span class="note">Warm one. Boat days are freezing even when the land is mild, and it goes straight from the plane bag to the ferry.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Sunglasses</span><span class="note">Low fall sun straight down a single-track road is worse than summer sun. Bring the case too — loose in a day pack they get crushed.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof pouch or small dry bag for your phone</span><span class="note">For the wildlife cruise and the walk in to Steall Falls.</span></label></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section class="seg" data-short="Wear on the plane">
+    <div class="seg-head"><span class="num">07</span><h2>Small things, outside pockets</h2></div>
+    <p class="why">The ones everyone forgets, because they're too small to picture. They go in the <strong>outside pockets</strong> of the suitcase, so finding a flashlight never means opening the whole thing in a dark parking lot.</p>
+    <ul class="list">
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Gloves</span><span class="note">The matching hat is in your plane bag, not here.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Buff or neck warmer</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Blister bandages</span><span class="note">There's a walk almost every day. Put one on the moment something rubs, not after.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Spare bootlaces</span><span class="note">A lace goes at the worst possible moment and nowhere on Mull sells them. Weighs nothing.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Band-Aids and antiseptic wipes</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Pain reliever</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Headlamp or small flashlight</span><span class="note">Dark by about six thirty in early October, and Tobermory has very few streetlights.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Earplugs</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Eye mask</span><span class="note">Put these two in the plane bag on the night, not the suitcase.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Pen</span><span class="note">For the form they hand out on the plane.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Glasses or contacts and solution<span class="maybe">if you wear them</span></span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Insect repellent<span class="maybe">probably not needed</span></span><span class="note">Midges are mostly gone by October, but Skye can still have them in a warm spell.</span></label></li>
+    </ul>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section class="seg" data-short="Door check">
+    <div class="seg-head"><span class="num">08</span><h2>Wear the bulky things</h2></div>
+    <p class="why">Boots and a coat eat about a quarter of a suitcase. <strong>Wear them instead</strong> and the bag shuts easily. You also land in Edinburgh already dressed for the weather, which you'll want at seven in the morning.</p>
+    <ul class="list">
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof hiking boots, already broken in</span><span class="note">Wear them around the house first. New boots on the Quiraing means blisters by day two.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof jacket with a hood<span class="darks">darks only</span></span><span class="note">A hood, not an umbrella — far too windy on the islands for an umbrella to survive.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">The pants and top you travel in<span class="darks">darks only</span></span></label></li>
+    </ul>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section class="seg" data-short="Skipping the stairs">
+    <div class="seg-head"><span class="num">09</span><h2>Door check</h2></div>
+    <p class="why">Stand by the front door with the suitcase zipped and go through these one at a time. <strong>Every one is something that's genuinely hard to fix once you've left.</strong></p>
+    <ul class="list noq">
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Medicines and supplements — in the little bag, in labelled boxes</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Phone charged, and everything downloaded actually downloaded</span><span class="note">Open one film on airplane mode and check it plays. That's the test.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">TripIt opens with the trip in it</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Boarding passes in your phone wallet</span><span class="note">They only exist from 24 hours before the flight, so this is the one thing on the whole list you cannot do in advance.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Credit card and driver's license — on you</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Little bag is inside the big bag</span><span class="note">One thing to carry through the gate, not two.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Nothing white went in</span><span class="note">Last chance. One white shirt costs everyone an extra wash cycle.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Waterproof jacket and boots — on you, not packed</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Both overnight bags are in the suitcase, empty and flat</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Suitcase zips shut and you can lift it</span></label></li>
+    </ul>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="seg">
+    <div class="seg-head"><span class="num">10</span><h2>Goal: NOT carrying a huge suitcase upstairs</h2></div>
+    <p class="why">Nothing left to pack — this last screen is for when you're there. Seven different places to sleep in thirteen nights, and almost none of them have an elevator. <strong>The suitcase never leaves the car.</strong> Done this way, arriving somewhere takes about four minutes, you each carry one light bag in, and you never unpack the suitcase once.</p>
+    <ol class="steps-list">
+      <li>
+        <span class="s">1</span>
+        <div><b>Open the suitcase in the trunk, not the room</b><span>Lid up, wheel end nearest you, everything standing on edge and visible. You're looking down at it like a drawer.</span></div>
+      </li>
+      <li>
+        <span class="s">2</span>
+        <div><b>Lift out exactly one day</b><span>One set of clothes from the upper half, plus the cosmetics bag off the top. Into the overnight bags, and that's all that comes inside.</span></div>
+      </li>
+      <li>
+        <span class="s">3</span>
+        <div><b>In the morning, dirty clothes go back out to the laundry bag</b><span>Lower right, straight into the bag — never back on top of the clean rolls. The clean side only ever shrinks.</span></div>
+      </li>
+      <li>
+        <span class="s">4</span>
+        <div><b>Wash day is every fourth day, and it's already packed</b><span>The laundry bag lifts straight out and goes to the machine. Nothing to sort, because nothing white ever went in.</span></div>
+      </li>
+    </ol>
+    <div class="done-msg"><b>That's the whole system.</b><br>Packed for 13 nights, seven beds and a lot of weather. See you in Edinburgh.</div>
+  </section>
+
+  <div class="nav" id="nav">
+    <button class="back" id="back" type="button">Back</button>
+    <button class="next" id="next" type="button">Next</button>
+  </div>
+  <p class="left" id="left"></p>
+
+  <footer class="foot">
+    <p><b>On your phone:</b> open this link, then tap the share button and <b>Add to Home Screen</b>. It opens like an app after that. Ticks are saved on the phone you tick them on — ticking something on a laptop won't show up here, so pick one device and pack from that.</p>
+    <p>Rain figures on the first screen are the share of days that see rain at that place at this time of year — twenty years of records, not a forecast for our actual dates. Mull at 76% is why the rain gear is not optional.</p>
+    <p>Stops and dates come from the Snapshot tab of the Scotland itinerary workbook; the base items and quantities from its Weather &amp; Packing tab, set for washing every four days. The contents of the cosmetics bag in step 2 are your own list, not the workbook's.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var KEY  = "scotland-kit-list-v1";
+  var SKEY = "scotland-kit-list-step";
+
+  var segs  = Array.prototype.slice.call(document.querySelectorAll('.seg'));
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.item input'));
+  var nEl   = document.getElementById('n');
+  var fill  = document.getElementById('fill');
+  var rail  = document.getElementById('rail');
+  var nextB = document.getElementById('next');
+  var backB = document.getElementById('back');
+  var leftP = document.getElementById('left');
+  var anchor= document.getElementById('steps');
+
+  /* boxes belonging to each segment, so the rail can show a finished step */
+  var segBoxes = segs.map(function(s){
+    return Array.prototype.slice.call(s.querySelectorAll('.item input'));
+  });
+
+  var cur = 0;
+
+  var chips = segs.map(function(s, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = String(i + 1);
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.addEventListener('click', function(){ go(i, true); });
+    rail.appendChild(b);
+    return b;
+  });
+
+  function segDone(i){
+    var bs = segBoxes[i];
+    /* A step with nothing to tick is done once it has been read -- step 1 is
+       the briefing and step 11 is the nightly routine. Returning false left
+       2 of 11 chips permanently grey on the page's only completion signal. */
+    if(!bs.length) return true;
+    return bs.every(function(b){ return b.checked; });
+  }
+
+  function paintRail(){
+    chips.forEach(function(c, i){
+      c.className = (i === cur) ? 'on' : (segDone(i) ? 'did' : '');
+    });
+    var c = chips[cur];
+    if(c && c.scrollIntoView) c.scrollIntoView({block:'nearest', inline:'center'});
+  }
+
+  function paintNav(){
+    backB.hidden = (cur === 0);
+    if(cur >= segs.length - 1){
+      nextB.hidden = true;
+      leftP.textContent = '';
+    } else {
+      nextB.hidden = false;
+      var short = segs[cur].getAttribute('data-short') || 'Next';
+      nextB.innerHTML = '';
+      nextB.appendChild(document.createTextNode('Next'));
+      var sp = document.createElement('span');
+      sp.textContent = short;
+      nextB.appendChild(sp);
+      var undone = segBoxes[cur].filter(function(b){ return !b.checked; }).length;
+      leftP.textContent = undone
+        ? undone + ' still unticked on this step — that’s fine, you can come back'
+        : '';
+    }
+  }
+
+  function paintMeter(){
+    var n = boxes.filter(function(b){ return b.checked; }).length;
+    nEl.textContent = n;
+    fill.style.width = (boxes.length ? (n / boxes.length) * 100 : 0) + "%";
+  }
+
+  function go(i, scroll){
+    cur = Math.max(0, Math.min(segs.length - 1, i));
+    segs.forEach(function(s, k){ s.hidden = (k !== cur); });
+    paintRail(); paintNav();
+    try{ localStorage.setItem(SKEY, String(cur)); }catch(e){}
+    if(scroll && anchor){
+      window.scrollTo({ top: anchor.offsetTop, behavior: 'smooth' });
+    }
+  }
+
+  nextB.addEventListener('click', function(){ go(cur + 1, true); });
+  backB.addEventListener('click', function(){ go(cur - 1, true); });
+
+  /* Ticks are stored against the ITEM'S OWN TEXT, never its position in the
+     list. The list still grows -- Carolina's cosmetics bag is going in as its
+     own items -- and an index-keyed array is discarded wholesale the moment
+     the count changes, silently wiping everything she had already packed.
+     A text key survives adding items, removing items and reordering steps;
+     it only breaks when an item is genuinely reworded, which makes it a
+     different item anyway. */
+  var seen = {};
+  var keys = boxes.map(function(b){
+    var el = b.parentNode.querySelector('.name');
+    var t = '';
+    if(el){
+      var c = el.cloneNode(true);
+      Array.prototype.slice.call(c.querySelectorAll('.darks,.maybe'))
+        .forEach(function(x){ x.parentNode.removeChild(x); });
+      t = c.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+    seen[t] = (seen[t] || 0) + 1;
+    return seen[t] > 1 ? t + '#' + seen[t] : t;
+  });
+
+  function save(){
+    try{
+      var on = [];
+      boxes.forEach(function(b, i){ if(b.checked) on.push(keys[i]); });
+      localStorage.setItem(KEY, JSON.stringify({ v: 2, ticked: on }));
+    }catch(e){ /* nothing to do; the page still works */ }
+  }
+
+  boxes.forEach(function(b){
+    b.addEventListener('change', function(){ save(); paintMeter(); paintRail(); paintNav(); });
+  });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    boxes.forEach(function(b){ b.checked = false; });
+    save(); paintMeter(); go(0, true);
+  });
+
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(raw){
+      var saved = JSON.parse(raw);
+      if(saved && saved.v === 2 && Array.isArray(saved.ticked)){
+        var on = {};
+        saved.ticked.forEach(function(k){ on[k] = 1; });
+        boxes.forEach(function(b, i){ b.checked = !!on[keys[i]]; });
+      } else if(Array.isArray(saved) && saved.length === boxes.length){
+        /* v1: an index-keyed array. Readable only while the count is
+           unchanged, which is exactly the limitation v2 exists to remove.
+           Migrated on the next tick, since save() now writes v2. */
+        boxes.forEach(function(b, i){ b.checked = !!saved[i]; });
+        save();
+      }
+    }
+  }catch(e){ /* private window, blocked storage: start fresh */ }
+
+  var start = 0;
+  try{
+    var s = parseInt(localStorage.getItem(SKEY), 10);
+    if(!isNaN(s)) start = s;
+  }catch(e){}
+
+  paintMeter();
+  go(start, false);
+})();
+</script>
+
+
+</body>
+</html>
