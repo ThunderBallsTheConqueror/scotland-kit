@@ -1189,6 +1189,21 @@
      run first: an item has to be out of its old list before anything counts
      what is where. */
   function applyCustom(){
+    /* An item SHE added is not in the DOM yet when the moves below replay, so
+       its move record could never apply -- and the added loop would then
+       re-create it at its original step, every single load, forever. Her own
+       items are exactly the ones she has most reason to move (there is no
+       delete control), so resolve those records against the added entry
+       instead and drop the dead record. Heals storage written before the fix. */
+    var healed = false;
+    custom.moved = custom.moved.filter(function(m){
+      var hit = null;
+      custom.added.forEach(function(a){ if(norm(a.name) === m.key) hit = a; });
+      if(hit){ hit.seg = m.seg; healed = true; return false; }
+      return true;
+    });
+    if(healed) saveCustom();
+
     custom.moved.forEach(function(m){
       var seg = segByNum(m.seg);
       var li  = seg && findItemLi(m.key);
@@ -1348,18 +1363,28 @@
     var prevRecord = null;
     custom.moved.forEach(function(m){ if(m.key === key) prevRecord = m; });
 
+    /* Is the thing being moved one of HER items rather than a built-in? If so
+       its position lives in custom.added, and a moved record keyed by name
+       would be replayed before that item exists -- see applyCustom. Rewrite
+       the entry instead; never both. */
+    var addedEntry = null;
+    custom.added.forEach(function(a){ if(norm(a.name) === key) addedEntry = a; });
+    var prevAddedSeg = addedEntry ? addedEntry.seg : null;
+
     addedList(segs[cur]).appendChild(li);
     pruneAdded(segs[from]);
 
     /* One record per item -- moving it a second time rewrites the
        destination rather than stacking up a history. */
     custom.moved = custom.moved.filter(function(m){ return m.key !== key; });
-    custom.moved.push({ key: key, seg: segNum(segs[cur]) });
+    if(addedEntry) addedEntry.seg = segNum(segs[cur]);
+    else           custom.moved.push({ key: key, seg: segNum(segs[cur]) });
     saveCustom();
     indexAll(); repaint();
 
     lastAct = { kind: 'move', li: li, key: key, what: hit.text,
-                prevParent: prevParent, prevNext: prevNext, prevRecord: prevRecord };
+                prevParent: prevParent, prevNext: prevNext, prevRecord: prevRecord,
+                prevSegIdx: from, addedEntry: addedEntry, prevAddedSeg: prevAddedSeg };
     entryState('Moved ' + quote(hit.text) + ' here from ' + stepLabel(from) + '.', 'ok');
   }
 
@@ -1374,9 +1399,17 @@
       if(act.li.parentNode) act.li.parentNode.removeChild(act.li);
       custom.added = custom.added.filter(function(a){ return a !== act.entry; });
     } else {
-      act.prevParent.insertBefore(act.li, act.prevNext);
+      /* doMove prunes the source list when it empties, so prevParent can be a
+         DETACHED <ul>. Inserting into that puts the item nowhere -- it would
+         vanish from all ten steps and from the counter, with no error. */
+      var dest = act.prevParent;
+      if(!document.body.contains(dest)) dest = addedList(segs[act.prevSegIdx]);
+      dest.insertBefore(act.li,
+        (act.prevNext && act.prevNext.parentNode === dest) ? act.prevNext : null);
+
       custom.moved = custom.moved.filter(function(m){ return m.key !== act.key; });
-      if(act.prevRecord) custom.moved.push(act.prevRecord);
+      if(act.addedEntry)     act.addedEntry.seg = act.prevAddedSeg;
+      else if(act.prevRecord) custom.moved.push(act.prevRecord);
     }
     pruneAdded(seg);
     saveCustom();
