@@ -394,6 +394,16 @@
   .nav .back{background:none;color:var(--mid);border-color:var(--line2);flex:0 0 auto}
   .nav .back:hover{color:var(--ink);border-color:var(--mid)}
   .nav button:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
+
+  /* The + button is position:fixed in the bottom-right ~70px of the VIEWPORT
+     (16px inset + 54px across). `.nav .next` is flex:1, so on a phone its right
+     end reaches to 20px from that same edge and a tap there opens the Add panel
+     instead of advancing -- on the page's primary control. Reserve the strip.
+     Above ~900px the centred 760px column is already clear of the viewport edge,
+     so the two never meet and the padding would only narrow the button. */
+  @media (max-width:900px){
+    .nav{padding-right:calc(64px + env(safe-area-inset-right,0px))}
+  }
   .left{
     font-family:"DM Mono",ui-monospace,monospace;font-size:12.5px;color:var(--mid);
     margin:11px 0 0 41px;
@@ -406,6 +416,26 @@
   }
   .foot p{margin:0 0 8px}
   .foot b{color:var(--ink2)}
+
+  /* Warm-trip leftovers. Deliberately NOT a .seg: the copy says "Ten short
+     steps", the stepper draws one dot per .seg, and the + button indexes .seg
+     elements. It also carries NO checkboxes on purpose -- indexAll() builds
+     boxes[] from .seg only, so a tick out here would never save and would be
+     blank again on the next reload. This is a note, and it reads like one. */
+  .warm{
+    margin:40px 0 0;padding:15px 17px;border-radius:var(--radius);
+    background:var(--heather-soft);border:1px dashed var(--heather);
+    font-size:14px;color:var(--ink2);max-width:62ch;
+  }
+  .warm .k{
+    font-family:"DM Mono",ui-monospace,monospace;font-size:11px;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--heather);
+    display:block;margin-bottom:8px;
+  }
+  .warm p{margin:0 0 9px}
+  .warm ul{margin:0;padding-left:19px}
+  .warm li{margin-bottom:3px}
+  .warm b{color:var(--ink)}
 
   /* ---- add an item -------------------------------------------------- */
   /* An item that has been ADDED or MOVED sits in its own list, so it no
@@ -511,6 +541,16 @@
     <p class="dek">Ten short steps, one screen at a time. Do a step, tap <b>Next</b>, come back later — the page remembers where you got to.</p>
   </header>
 
+  <!-- Zero-height, NON-STICKY scroll target for "tap Next -> jump to the top".
+       It has to be a SEPARATE element from #steps below, because #steps is
+       position:sticky and a STUCK sticky element reports
+       getBoundingClientRect().top === 0 -- so measuring it returns the current
+       scroll offset, and scrolling there moves nothing at all. That was the
+       bug Rich hit on his phone. This marker is in normal flow, never sticks,
+       and therefore reports a real document position.
+       Do not delete it and do not give it a height. -->
+  <div id="topmark" aria-hidden="true"></div>
+
   <div class="steps" id="steps">
     <div class="meter">
       <span class="count"><span id="n">0</span><em> packed</em></span>
@@ -565,7 +605,7 @@
     <p class="why">Anything liquid goes in a sealed zip-top bag <em>inside</em> it. Cabin pressure makes bottles leak, and a leak at the bottom of a suitcase ruins everything packed under it.</p>
     <p class="why">It lives in the suitcase and comes into the room every night. It is <em>not</em> the small kit you keep with you on the plane — that one is step 6, and a few things are deliberately duplicated between them.</p>
     <div class="pending">
-      <b>Two of these still need a list of their own: makeup, and your skin care routine.</b> Send Rich what is actually in each and they will come back here as separate tick boxes, the way everything else on this page works.
+      <b>Your skin care routine is in now — cleanser, serum, face sunscreen — taken from your own list.</b> If it runs to more steps than that, send them and they come back here as their own boxes. <b>Makeup still needs a list of its own.</b> Send Rich what is actually in it and it works the same way.
     </div>
     <ul class="list">
       <li class="grp">Already in the bag</li>
@@ -576,7 +616,14 @@
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Sunscreen</span><span class="note">Not the obvious thing to pack for October, but the sun sits low all day and comes straight off the water on the Staffa and Mull boats.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Body moisturizer</span><span class="note">Wind outside, radiators inside, ten days running.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Makeup<span class="maybe">list to come</span></span><span class="note">Goes in as its own tick boxes once you send the list. A cut-down version also lives in the plane bag — that is step 6.</span></label></li>
-      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Skin care routine<span class="maybe">list to come</span></span><span class="note">However many steps yours runs to — send them and each one gets its own box.</span></label></li>
+
+      <li class="grp">Your skin care routine, in order</li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Face cleanser</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Serum</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Face sunscreen</span><span class="note">Your face one, not the body bottle above — that is a separate thing and both go in.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Anything else in the routine<span class="maybe">tell Rich</span></span><span class="note">These three came off your old list. If it has grown since, each new step gets its own box here.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Eye makeup remover</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Cotton rounds</span><span class="note">Bring them. Nowhere we stay after Edinburgh has a shop that reliably sells them.</span></label></li>
 
       <li class="grp">In here too, now the wash bag is gone</li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Toothbrush</span></label></li>
@@ -584,6 +631,14 @@
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Deodorant</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Hairbrush or comb</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Razor and shaving kit</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Floss</span><span class="note">The flossers in the plane bag are for the flight. These are for the other nine nights.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Shower cap</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Perfume</span><span class="note">Full size travels here in the suitcase. It cannot go in the plane bag unless it is 100ml or under.</span></label></li>
+
+      <li class="grp">Hair</li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Round brush for blow drying</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Hair trimmer</span><span class="note">Fine on a plug adapter alone — it draws almost nothing.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Checked that each place has a hair dryer<span class="maybe">do this before you fly</span></span><span class="note">Leave yours at home. UK sockets are 240V and yours is 120V — an adapter changes the plug shape, not the power, so it would trip the breaker or burn out on the first go. Nearly every room in Britain has one; this box is just making sure.</span></label></li>
 
       <li class="grp">What this trip adds</li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Lip balm</span><span class="note">The most-used item on a Scottish coast trip. Wind off the sea on Mull will crack your lips in an afternoon.</span></label></li>
@@ -608,7 +663,10 @@
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">2 ×</span><span class="name">Pants<span class="darks">darks only</span></span><span class="note">Plus the pair you travel in. One should be a pair you don't mind getting muddy.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Thermal or warm leggings for under pants<span class="darks">darks only</span></span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">2 ×</span><span class="name">Pajamas<span class="darks">darks only</span></span></label></li>
-      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Something to wear out for dinner<span class="darks">darks only</span></span><span class="note">Nowhere on this trip is formal, but the last night in Edinburgh is worth one nice thing.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Dress for going out<span class="darks">darks only</span></span><span class="note">Nowhere on this trip is formal, but the last night in Edinburgh is worth one nice thing.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 &#215;</span><span class="name">Sweater to go over the dress<span class="darks">darks only</span></span><span class="note">It is about 45°F walking back to the hotel in Edinburgh in October. This is what makes the dress wearable.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">6 &#215;</span><span class="name">Bras<span class="darks">darks only</span></span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 &#215;</span><span class="name">Workout clothes<span class="darks">darks only</span></span><span class="note">Gym pants or sweats. Your sneakers are already on the list — you do not need a second pair for this.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Swimsuit<span class="maybe">if you swim</span></span><span class="note">Two of the places we stay have somewhere to swim, and the Ziploc bags in the next step assume a wet one. Skip it if that is not your idea of Scotland.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1 ×</span><span class="name">Shorts<span class="maybe">optional</span></span><span class="note">Not for the weather — for sleeping in, or a gym if a hotel has one.</span></label></li>
     </ul>
@@ -635,7 +693,17 @@
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Rain pants</span><span class="note">Bulky and tough. Nothing in this quarter minds being sat on.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Pants and thermal leggings, rolled</span><span class="note">The heaviest fabric you're taking.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Fleece or thick hoodie</span></label></li>
-          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Laundry bag, empty and flat down the side</span><span class="note">A pillowcase works. It stays in the car for the whole trip and never comes indoors.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Laundry bag, empty and flat down the side</span><span class="note">A <b>spare</b> pillowcase works — not the one you are packing for the bed pillow. It stays in the car for the whole trip and never comes indoors.</span></label></li>
+
+          <li class="grp">Food and supplements</li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Protein powder — plant-based</span><span class="note">Plant-based, not whey. The UK does not allow dairy brought in from outside the EU, and whey is a dairy product. A plant protein has no such question hanging over it.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Shaker cup</span><span class="note">Pack it with something soft inside it — an empty cup is wasted space.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Protein bars</span><span class="note">The long drives are where these earn their room. Two of the days have three hours between anywhere to stop.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Small jar of peanut butter</span><span class="note">Suitcase only. Security treats it as a liquid, so it cannot travel in the plane bags.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Food container</span><span class="note">Also pack it full rather than empty.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Salt and pepper</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Stevia</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Brown noise machine</span><span class="note">Seven different rooms in thirteen nights and not one of them sounds like home. Worth the space.</span></label></li>
         </ul>
       </div>
       <p class="wheels">Wheels along this edge</p>
@@ -650,6 +718,9 @@
         <header><span class="o">4</span><div><h3>Upper right</h3><span class="k">Small and soft · fills the gaps</span></div></header>
         <ul class="list noq">
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Underwear and socks</span><span class="note">Whatever didn't get stuffed inside the shoes. These are your packing material — push them into every corner.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Resistance bands</span><span class="note">Weigh nothing and flatten into a corner.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Toys</span><span class="note">In a soft bag of their own, not loose. This quarter gets squashed when the lid shuts.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Soap for them</span><span class="note">A small bottle, sealed in a zip-top bag like everything else that can leak.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Nothing rigid in this quarter</span><span class="note">It's the one that gets squashed when the lid shuts.</span></label></li>
         </ul>
       </div>
@@ -659,6 +730,8 @@
       <ul class="list noq">
         <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Cosmetics bag, flat on top</span><span class="note">The one bag that leaves the car every night. It goes in last so it lifts straight out.</span></label></li>
         <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Both overnight bags, folded flat over the whole top half</span><span class="note">They travel empty inside the suitcase and are the first thing you reach on night one.</span></label></li>
+        <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Your bed pillow, in a compression bag</span><span class="note">A compression bag takes it to about a third the size. It belongs up here with the overnight bags, not in one of the four quarters — down there it eats exactly the room step 4 exists to protect. Soft, last in, and it fills the lid.</span></label></li>
+        <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">A pillowcase for it</span><span class="note">Your own pillowcase on your own pillow is most of the reason the pillow is worth the room at all.</span></label></li>
         <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Straps done up, or the top half packed tight enough not to slump</span><span class="note">When the suitcase stands upright everything slides toward the wheels. This is the one thing that stops the clothes ending up on the shoes.</span></label></li>
       </ul>
     </div>
@@ -717,10 +790,14 @@
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Phone</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Phone charging cable</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Wall charger or plug block</span><span class="note">Bring this one in here rather than in the suitcase — so you can charge at the gate on the way home.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">UK plug adapter</span><span class="note">Type G — the big three-pin one. Nothing you own goes into a British socket without it, and it is the last thing you want to be hunting for at seven in the morning in Edinburgh.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Headphone adapter</span><span class="note">For the seat-back screen on the overnight flight, if your headphones are wireless.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Car charger</span><span class="note">You are in the rental car within an hour of landing, long before the suitcase gets opened.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Headphones</span><span class="note">The reason you did step 5.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Credit card, plus a second one kept somewhere separate</span><span class="note">Tell the bank you'll be in the UK before you fly, or the first gas station declines you.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Driver's license</span><span class="note">Photo ID for the ferries and anywhere that asks.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Some cash in pounds</span><span class="note">A few island parking lots and honesty boxes take coins only.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Jewelry bag — earrings and necklace</span><span class="note">Never in a checked bag, and never loose in a pocket. It is small enough that there is no reason it ever leaves your side.</span></label></li>
 
           <li class="grp">Health — never in the hold</li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Prescription medicines, in the original labelled boxes</span><span class="note">Labelled boxes matter at the border.</span></label></li>
@@ -734,6 +811,7 @@
 
           <li class="grp">The refresh kit — a duplicate of the cosmetics bag on purpose</li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Lip products</span><span class="note">A cabin at altitude and a Scottish coast wind do the same thing to your lips.</span></label></li>
+          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Face wipes</span><span class="note">Worth far more in the seat on a night flight than anywhere in the suitcase. This is the one that makes landing at 7am bearable.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Makeup — just what you'd want on landing</span><span class="note">Not the whole bag. That one's in the suitcase.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Small mirror</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Tweezers</span><span class="note">Allowed in hand luggage.</span></label></li>
@@ -768,7 +846,7 @@
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Buff or neck warmer</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Blister bandages</span><span class="note">There's a walk almost every day. Put one on the moment something rubs, not after.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Spare bootlaces</span><span class="note">A lace goes at the worst possible moment and nowhere on Mull sells them. Weighs nothing.</span></label></li>
-      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Band-Aids and antiseptic wipes</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof Band-Aids, and Neosporin</span><span class="note">Waterproof is the word that matters. There is a walk almost every day and it rains on a lot of them — an ordinary bandage lifts off within the hour.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Pain reliever</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Headlamp or small flashlight</span><span class="note">Dark by about six thirty in early October, and Tobermory has very few streetlights.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Earplugs</span></label></li>
@@ -783,9 +861,11 @@
   <section class="seg" data-short="Door check">
     <div class="seg-head"><span class="num">08</span><h2>Wear the bulky things</h2></div>
     <p class="why">Boots and a coat eat about a quarter of a suitcase. <strong>Wear them instead</strong> and the bag shuts easily. You also land in Edinburgh already dressed for the weather, which you'll want at seven in the morning.</p>
+    <p class="why"><strong>No winter coat.</strong> It is the one thing people expect to need here and it is the wrong tool. Early October runs about 45–55°F — not cold enough for a winter coat, but wet and very windy, and a heavy coat that soaks through stays wet for two days and becomes something you carry. The thermal top, the fleece and this jacket together are warmer than a coat in that weather, dry overnight, and come apart when a shop is overheated. If you are ever cold, the answer is another layer under the jacket, not a bigger coat.</p>
     <ul class="list">
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof hiking boots, already broken in</span><span class="note">Wear them around the house first. New boots on the Quiraing means blisters by day two.</span></label></li>
-      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof jacket with a hood<span class="darks">darks only</span></span><span class="note">A hood, not an umbrella — far too windy on the islands for an umbrella to survive.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Your inserts — in the boots now, not packed loose</span><span class="note">Loose in a bag is how they get left at home. Put them in the boots you are flying in.</span></label></li>
+      <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof jacket with a hood<span class="darks">darks only</span></span><span class="note">A hood, not an umbrella — far too windy on the islands for an umbrella to survive. This plus the fleece is the coat.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">The pants and top you travel in<span class="darks">darks only</span></span></label></li>
     </ul>
   </section>
@@ -839,6 +919,17 @@
   </div>
   <p class="left" id="left"></p>
 
+  <aside class="warm">
+    <span class="k">Not this trip — the next warm one</span>
+    <p>Three things came off your list that belong to a hot-weather trip rather than to Scotland in October. Nothing here goes in a bag this time. It is written down so it isn't lost, and so you don't have to wonder later whether it was missed.</p>
+    <ul>
+      <li><b>Tan cream</b></li>
+      <li><b>Plastic gloves</b> — the ones that go with it</li>
+      <li><b>Beach bag</b></li>
+    </ul>
+    <p style="margin-bottom:0">Your swimsuit and shorts <em>are</em> on the list, in step 3 — two of the places we stay have somewhere to swim.</p>
+  </aside>
+
   <footer class="foot">
     <p><b>On your phone:</b> open this link, then tap the share button and <b>Add to Home Screen</b>. It opens like an app after that. Ticks are saved on the phone you tick them on — ticking something on a laptop won't show up here, so pick one device and pack from that.</p>
     <p>Rain figures on the first screen are the share of days that see rain at that place at this time of year — twenty years of records, not a forecast for our actual dates. Mull at 76% is why the rain gear is not optional.</p>
@@ -877,6 +968,12 @@
   var backB = document.getElementById('back');
   var leftP = document.getElementById('left');
   var anchor= document.getElementById('steps');
+
+  /* The thing we actually scroll TO. #steps is sticky and lies about its
+     position once stuck; #topmark sits just above it in normal flow and does
+     not. The fallback to anchor only matters if the marker is deleted, which
+     build_standalone.py now refuses. */
+  var topmark = document.getElementById('topmark') || anchor;
 
   /* The set of checkboxes is NO LONGER FIXED AT LOAD -- the + button adds
      items and can move one between steps -- so nothing may hold a private
@@ -973,19 +1070,24 @@
      Instant rather than smooth is also deliberate. The travel here is most of
      a screen height; animating it is slow on a phone and reads as lag. */
   function jumpToTop(){
-    if(!anchor) return;
-    try{ window.scrollTo(0, docTop(anchor)); }catch(e){}
+    if(!topmark) return;
+    try{ window.scrollTo(0, docTop(topmark)); }catch(e){}
 
     /* Second pass after the browser has laid the newly-shown section out.
        Toggling .hidden changes the document height, and a scroll issued
        against the OLD height can be clamped short -- most likely going from
        a long step to a short one, which is the common direction here.
-       Bounded to one frame, so it can never fight a real scroll gesture. */
+       Bounded to one frame, so it can never fight a real scroll gesture.
+
+       This measures #topmark, NOT #steps. Measuring the sticky bar made this
+       check structurally incapable of firing: a stuck sticky element always
+       reports rect.top === 0, i.e. "already correct", including when the
+       scroll did nothing at all. */
     if(window.requestAnimationFrame){
       window.requestAnimationFrame(function(){
         try{
-          var off = anchor.getBoundingClientRect().top;
-          if(Math.abs(off) > 2) window.scrollTo(0, docTop(anchor));
+          var off = topmark.getBoundingClientRect().top;
+          if(Math.abs(off) > 2) window.scrollTo(0, docTop(topmark));
         }catch(e){}
       });
     }
@@ -1128,19 +1230,32 @@
   }
 
   var custom = (function(){
+    /* Validated, not merely Array.isArray. A malformed entry reached makeItem()
+       and produced an un-nameable, un-removable ghost checkbox that counted
+       against her progress -- and there is no delete control, so a ghost is
+       permanent. Seven malformed shapes were probed; none of them threw, which
+       is exactly why nothing caught this. Note {seg:'99',name:'Ghost'} is NOT
+       malformed and must keep working: an unknown step number is parked on the
+       last step by design, so something she typed never disappears. */
+    function goodAdd(a){ return a && typeof a.name === 'string' && a.name.trim() !== ''; }
+    function goodMove(m){ return m && typeof m.key === 'string' && m.key !== ''; }
     try{
       var o = JSON.parse(localStorage.getItem(CKEY));
       return {
-        added: (o && Array.isArray(o.added)) ? o.added : [],
-        moved: (o && Array.isArray(o.moved)) ? o.moved : []
+        added: (o && Array.isArray(o.added)) ? o.added.filter(goodAdd) : [],
+        moved: (o && Array.isArray(o.moved)) ? o.moved.filter(goodMove) : []
       };
     }catch(e){ return { added: [], moved: [] }; }
   })();
 
+  /* Returns whether the write actually landed. iOS Safari in private browsing
+     throws on setItem, and swallowing that told her "Added" for every item all
+     trip while none of them would survive a reload. */
   function saveCustom(){
     try{
       localStorage.setItem(CKEY, JSON.stringify({ v: 1, added: custom.added, moved: custom.moved }));
-    }catch(e){ /* blocked storage: it still works for this sitting */ }
+      return true;
+    }catch(e){ return false; }   /* private browsing or quota -- still works this sitting */
   }
 
   /* Her own items go in a list of their own rather than into one of the
@@ -1197,6 +1312,12 @@
        instead and drop the dead record. Heals storage written before the fix. */
     var healed = false;
     custom.moved = custom.moved.filter(function(m){
+      /* Only a record that CANNOT apply may be healed. A built-in bearing this
+         key is in the DOM right now -- her own items are not, they are created
+         by the added loop below -- so if one exists the record belongs to IT,
+         and healing it onto a same-named item she added moves BOTH to the wrong
+         step and writes that to storage, permanently. */
+      if(findItemLi(m.key)) return true;
       var hit = null;
       custom.added.forEach(function(a){ if(norm(a.name) === m.key) hit = a; });
       if(hit){ hit.seg = m.seg; healed = true; return false; }
@@ -1348,11 +1469,16 @@
 
     var entry = { seg: segNum(seg), name: name };
     custom.added.push(entry);
-    saveCustom();
+    var stored = saveCustom();
     indexAll(); repaint();
 
     lastAct = { kind: 'add', li: li, entry: entry, what: name };
-    entryState('Added ' + quote(name) + ' to this step.', 'ok');
+    /* Never say "Added" when the write did not land. quote() still escapes her
+       text; the extra markup here is page-controlled, so the XSS the suite pins
+       stays closed. */
+    entryState('Added ' + quote(name) + ' to this step.' +
+               (stored ? '' : ' <b>This phone is not saving</b> — it will be gone if you reload.'),
+               stored ? 'ok' : '');
   }
 
   function doMove(hit){
