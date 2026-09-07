@@ -526,6 +526,40 @@
     100%{background:transparent;box-shadow:0 0 0 3px transparent}
   }
 
+  /* Undo, after the panel has already closed. Rich, on a phone 2026-09-07:
+     "You have to click a blue checkmark before you find out there is a new pop
+     up with the Add Undo options. Getting rid of the blue checkmark would be
+     lovely." The blue checkmark is the phone keyboard's own Enter key --
+     enterkeyhint="done" draws it blue with a tick -- and no page can delete a
+     key on the soft keyboard. What the page CAN delete is the second screen
+     behind it: pressing it used to re-render the card into an Added/Undo/Done
+     state, so one typed word cost two taps and a screen she had no way to know
+     was coming. Now the add finishes the job and Undo waits down here.
+     Sits ABOVE the + button -- 16px inset + 54px tall + 12px gap = 82px -- so
+     the two can never overlap. */
+  .undobar{
+    position:fixed;z-index:45;
+    left:16px;right:16px;
+    left:calc(16px + env(safe-area-inset-left,0px));
+    right:calc(16px + env(safe-area-inset-right,0px));
+    bottom:calc(82px + env(safe-area-inset-bottom,0px));
+    margin:0 auto;max-width:520px;
+    display:flex;align-items:center;gap:12px;
+    padding:12px 13px 12px 15px;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:12px;box-shadow:var(--shadow);
+    font-size:14.5px;line-height:1.35;color:var(--ink2);
+  }
+  .undobar .u-text{flex:1;min-width:0}
+  .undobar .u-text b{color:var(--ink);font-weight:700}
+  .undobar .u-btn{
+    flex:0 0 auto;font-family:inherit;font-size:14.5px;font-weight:700;
+    padding:9px 15px;border-radius:9px;cursor:pointer;
+    background:var(--heather);color:var(--qty-on);border:1px solid var(--heather);
+  }
+  .undobar .u-btn:hover{filter:brightness(1.12)}
+  .undobar .u-btn:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
+
   @media (max-width:560px){
     body{font-size:16.5px}
     .why,.list,.inset,.pending,.bags,.rule,.route,.steps-list,.done-msg,.nav,
@@ -537,7 +571,7 @@
     *{transition:none !important;animation:none !important}
   }
   @media print{
-    .steps,.nav,.fab,.addwrap{display:none}
+    .steps,.nav,.fab,.addwrap,.undobar{display:none}
     /* Print every step, not just the one on screen. The host reset is
        `[hidden]:not([hidden=until-found]){display:none!important}` -- :not()
        takes its argument's specificity, so that is 0,2,0 and `.seg[hidden]`
@@ -966,6 +1000,11 @@
     <p class="addmsg" id="addmsg"></p>
     <div class="addbtns" id="addbtns"></div>
   </div>
+</div>
+
+<div class="undobar" id="undobar" role="status" aria-live="polite" hidden>
+  <span class="u-text" id="undotext"></span>
+  <button class="u-btn" id="undobtn" type="button">Undo</button>
 </div>
 
 <script>
@@ -1414,6 +1453,10 @@
   var inputEl = document.getElementById('addinput');
   var msgEl   = document.getElementById('addmsg');
   var btnsEl  = document.getElementById('addbtns');
+  var barEl   = document.getElementById('undobar');
+  var barText = document.getElementById('undotext');
+  var barBtn  = document.getElementById('undobtn');
+  var barTmr  = null;
   var lastAct = null;   /* what Undo would reverse */
   var reveal  = null;   /* the <li> to put on screen when the panel closes */
 
@@ -1485,8 +1528,11 @@
     return b;
   }
 
-  /* Typing state. The input is visible, Enter submits, and Undo is offered
-     only while there is something to undo. */
+  /* Typing state. The input is visible and Enter submits. Undo is NOT offered
+     here any more: an add or a move now closes the panel outright, so by the
+     time there is something to reverse this card is gone and the bar at the
+     bottom is holding the offer. A dead Undo button on a card that can never
+     carry one reads like coverage and is not. */
   function entryState(message, cls){
     subEl.textContent = 'It goes on ' + stepLabel(cur) + '.';
     inputEl.hidden = false;
@@ -1494,14 +1540,33 @@
     say(message || '', cls);
     btnsEl.innerHTML = '';
     btn('Add', 'primary', submit);
-    if(lastAct) btn('Undo', '', undo);
     btn('Done', '', closePanel);
     try{ inputEl.focus(); }catch(e){}
+  }
+
+  /* The bar that carries Undo once the panel has gone. It is the whole reason
+     an add can now finish in one tap: the reversal does not need a screen of
+     its own, so nothing has to be discovered behind the keyboard's Enter key.
+     Nine seconds while there is something to undo, three for the acknowledgement
+     afterwards -- long enough to read, short enough not to sit over the list. */
+  function hideBar(){
+    if(barTmr){ window.clearTimeout(barTmr); barTmr = null; }
+    if(barEl) barEl.hidden = true;
+  }
+  function showBar(html){
+    if(!barEl) return;
+    if(barTmr){ window.clearTimeout(barTmr); barTmr = null; }
+    barText.innerHTML = html;
+    /* No act left to reverse -- this is the receipt, not the offer. */
+    barBtn.hidden = !lastAct;
+    barEl.hidden  = false;
+    barTmr = window.setTimeout(hideBar, lastAct ? 9000 : 3200);
   }
 
   function openPanel(){
     lastAct = null;
     reveal  = null;
+    hideBar();
     panel.hidden = false;
     entryState('');
   }
@@ -1509,6 +1574,17 @@
     panel.hidden = true;
     lastAct = null;
     revealNow();
+  }
+
+  /* An add or a move is DONE, so the panel goes rather than re-rendering into
+     another state. lastAct deliberately survives: the bar is what offers to
+     reverse it now. Blur first so the phone takes the keyboard down with the
+     panel instead of leaving it over the list she is being scrolled to. */
+  function finishPanel(message){
+    try{ inputEl.blur(); }catch(e){}
+    panel.hidden = true;
+    revealNow();
+    showBar(message);
   }
 
   function submit(){
@@ -1552,13 +1628,16 @@
     var stored = saveCustom();
     indexAll(); repaint();
 
-    lastAct = { kind: 'add', li: li, entry: entry, what: name };
+    /* segIdx, not `cur` at undo time. The bar outlives the panel, so she can tap
+       Next and THEN Undo -- and pruneAdded() would tidy the step she is looking
+       at instead of the one the item landed on, leaving an empty "Added by you"
+       heading behind on the real step. */
+    lastAct = { kind: 'add', li: li, entry: entry, what: name, segIdx: cur };
     /* Never say "Added" when the write did not land. quote() still escapes her
        text; the extra markup here is page-controlled, so the XSS the suite pins
        stays closed. */
-    entryState('Added ' + quote(name) + ' to this step.' +
-               (stored ? '' : ' <b>This phone is not saving</b> — it will be gone if you reload.'),
-               stored ? 'ok' : '');
+    finishPanel('Added ' + quote(name) + '.' +
+                (stored ? '' : ' <b>This phone is not saving</b> — it will be gone if you reload.'));
   }
 
   function doMove(hit){
@@ -1589,17 +1668,18 @@
     saveCustom();
     indexAll(); repaint();
 
-    lastAct = { kind: 'move', li: li, key: key, what: hit.text,
+    lastAct = { kind: 'move', li: li, key: key, what: hit.text, segIdx: cur,
                 prevParent: prevParent, prevNext: prevNext, prevRecord: prevRecord,
                 prevSegIdx: from, addedEntry: addedEntry, prevAddedSeg: prevAddedSeg };
-    entryState('Moved ' + quote(hit.text) + ' here from ' + stepLabel(from) + '.', 'ok');
+    finishPanel('Moved ' + quote(hit.text) + ' here from ' + stepLabel(from) + '.');
   }
 
   /* One step back. A typo that cannot be taken back would sit on her list for
      the whole trip, so the add flow carries its own reverse. */
   function undo(){
     if(!lastAct) return;
-    var act = lastAct, seg = segs[cur];
+    var act = lastAct;
+    var seg = segs[typeof act.segIdx === 'number' ? act.segIdx : cur];
     lastAct = null;
     /* Nothing to reveal any more -- an undone add is gone, and an undone move
        is back where it started, which is not where she is looking. */
@@ -1625,12 +1705,20 @@
     saveCustom();
     indexAll(); repaint();
 
-    entryState(act.kind === 'add'
+    /* The bar is the only caller, so the panel is already gone and must stay
+       gone -- entryState() would re-focus a hidden input and put the keyboard
+       back up over nothing. lastAct is null by now, so showBar drops the button
+       and this reads as a receipt rather than a second offer. */
+    showBar(act.kind === 'add'
       ? 'Removed ' + quote(act.what) + '.'
       : quote(act.what) + ' is back where it was.');
   }
 
   fab.addEventListener('click', openPanel);
+  barBtn.addEventListener('click', function(){
+    if(!lastAct){ hideBar(); return; }
+    undo();
+  });
   panel.addEventListener('click', function(e){ if(e.target === panel) closePanel(); });
   inputEl.addEventListener('keydown', function(e){
     if(e.key === 'Enter' || e.keyCode === 13){ e.preventDefault(); submit(); }
