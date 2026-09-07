@@ -407,6 +407,77 @@
   .foot p{margin:0 0 8px}
   .foot b{color:var(--ink2)}
 
+  /* ---- add an item -------------------------------------------------- */
+  /* An item that has been ADDED or MOVED sits in its own list, so it no
+     longer inherits the grid its old list gave it. `.list.mult .item` is
+     what makes "6 ×" a wide pill and `.list.noq .item` is what closes up
+     the gap where a quantity would go -- both are set by the PARENT, so
+     without these two an item that moves renders with a stray empty
+     column, or a count crushed into a 34px circle. Stamped per item by
+     stampLayout(), which reads the destination, not the source. */
+  .item.as-noq{grid-template-columns:23px 1fr}
+  .item.as-noq .name,.item.as-noq .note{grid-column:2}
+  .item.as-mult{grid-template-columns:23px 50px 1fr}
+  .item.as-mult .qty{width:50px;border-radius:100px}
+
+  .fab{
+    position:fixed;z-index:40;
+    right:16px;bottom:16px;
+    right:calc(16px + env(safe-area-inset-right,0px));
+    bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    width:54px;height:54px;border-radius:100px;border:0;
+    background:var(--heather);color:var(--qty-on);
+    display:grid;place-items:center;
+    font-family:inherit;font-size:30px;line-height:1;padding:0 0 3px;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    box-shadow:0 3px 10px rgba(26,35,30,.22),0 10px 30px rgba(26,35,30,.20);
+  }
+  .fab:hover{filter:brightness(1.12)}
+  .fab:focus-visible{outline:2px solid var(--loch);outline-offset:3px}
+
+  /* Bottom sheet on a phone (thumb reach), a centred card once there is room. */
+  .addwrap{
+    position:fixed;inset:0;z-index:50;
+    display:flex;align-items:flex-end;justify-content:center;
+    background:rgba(26,35,30,.42);
+  }
+  .addcard{
+    width:100%;max-width:520px;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:14px 14px 0 0;box-shadow:var(--shadow);
+    padding:17px 17px 20px;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  }
+  @media (min-width:560px){
+    .addwrap{align-items:center}
+    .addcard{border-radius:14px}
+  }
+  .addtitle{
+    margin:0;font-family:"Bricolage Grotesque",sans-serif;
+    font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink);
+  }
+  .addsub{margin:4px 0 0;font-size:14px;color:var(--mid)}
+  .addinput{
+    display:block;width:100%;box-sizing:border-box;margin:13px 0 0;
+    padding:12px 13px;font-family:inherit;font-size:16.5px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line2);border-radius:9px;
+  }
+  .addinput:focus{outline:2px solid var(--loch);outline-offset:1px}
+  .addmsg{margin:12px 0 0;font-size:15px;color:var(--ink2);line-height:1.4}
+  .addmsg:empty{display:none}
+  .addmsg.ok{color:var(--done)}
+  .addmsg b{color:var(--ink);font-weight:700}
+  .addbtns{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0 0}
+  .addbtn{
+    font-family:inherit;font-size:15px;font-weight:700;
+    padding:11px 15px;border-radius:9px;cursor:pointer;
+    background:none;color:var(--mid);border:1px solid var(--line2);
+  }
+  .addbtn:hover{color:var(--ink);border-color:var(--mid)}
+  .addbtn.primary{background:var(--heather);color:var(--qty-on);border-color:var(--heather)}
+  .addbtn.primary:hover{filter:brightness(1.12);color:var(--qty-on)}
+  .addbtn:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
+
   @media (max-width:560px){
     body{font-size:16.5px}
     .why,.list,.inset,.pending,.bags,.rule,.route,.steps-list,.done-msg,.nav,
@@ -418,7 +489,7 @@
     *{transition:none !important;animation:none !important}
   }
   @media print{
-    .steps,.nav{display:none}
+    .steps,.nav,.fab,.addwrap{display:none}
     /* Print every step, not just the one on screen. The host reset is
        `[hidden]:not([hidden=until-found]){display:none!important}` -- :not()
        takes its argument's specificity, so that is 0,2,0 and `.seg[hidden]`
@@ -775,13 +846,30 @@
   </footer>
 </div>
 
+<button class="fab" id="addfab" type="button" aria-label="Add something to this step">+</button>
+
+<div class="addwrap" id="addwrap" hidden>
+  <div class="addcard" role="dialog" aria-modal="true" aria-labelledby="addtitle">
+    <p class="addtitle" id="addtitle">Add to this step</p>
+    <p class="addsub" id="addsub"></p>
+    <input class="addinput" id="addinput" type="text" autocomplete="off" autocorrect="off"
+           autocapitalize="sentences" spellcheck="false" enterkeyhint="done"
+           placeholder="What do you want to add?" aria-labelledby="addtitle">
+    <p class="addmsg" id="addmsg"></p>
+    <div class="addbtns" id="addbtns"></div>
+  </div>
+</div>
+
 <script>
 (function(){
   var KEY  = "scotland-kit-list-v1";
   var SKEY = "scotland-kit-list-step";
+  /* Items she adds herself, and built-ins she has moved to a different step.
+     Its own key on purpose: "Start over" clears ticks, and must never be able
+     to throw away something she typed in. */
+  var CKEY = "scotland-kit-list-custom-v1";
 
   var segs  = Array.prototype.slice.call(document.querySelectorAll('.seg'));
-  var boxes = Array.prototype.slice.call(document.querySelectorAll('.item input'));
   var nEl   = document.getElementById('n');
   var fill  = document.getElementById('fill');
   var rail  = document.getElementById('rail');
@@ -790,10 +878,16 @@
   var leftP = document.getElementById('left');
   var anchor= document.getElementById('steps');
 
-  /* boxes belonging to each segment, so the rail can show a finished step */
-  var segBoxes = segs.map(function(s){
-    return Array.prototype.slice.call(s.querySelectorAll('.item input'));
-  });
+  /* The set of checkboxes is NO LONGER FIXED AT LOAD -- the + button adds
+     items and can move one between steps -- so nothing may hold a private
+     copy of it. These three are rebuilt by indexAll() after every change:
+       boxes    every checkbox, document order
+       segBoxes the boxes belonging to each segment, so the rail can show a
+                finished step
+       keys     the storage key for each box, by name (see indexAll) */
+  var boxes = [];
+  var segBoxes = [];
+  var keys = [];
 
   var cur = 0;
 
@@ -908,26 +1002,56 @@
   nextB.addEventListener('click', function(){ go(cur + 1, true); });
   backB.addEventListener('click', function(){ go(cur - 1, true); });
 
-  /* Ticks are stored against the ITEM'S OWN TEXT, never its position in the
-     list. The list still grows -- Carolina's cosmetics bag is going in as its
-     own items -- and an index-keyed array is discarded wholesale the moment
-     the count changes, silently wiping everything she had already packed.
-     A text key survives adding items, removing items and reordering steps;
-     it only breaks when an item is genuinely reworded, which makes it a
-     different item anyway. */
-  var seen = {};
-  var keys = boxes.map(function(b){
-    var el = b.parentNode.querySelector('.name');
-    var t = '';
-    if(el){
-      var c = el.cloneNode(true);
-      Array.prototype.slice.call(c.querySelectorAll('.darks,.maybe'))
-        .forEach(function(x){ x.parentNode.removeChild(x); });
-      t = c.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
-    }
-    seen[t] = (seen[t] || 0) + 1;
-    return seen[t] > 1 ? t + '#' + seen[t] : t;
-  });
+  /* The visible text of an item, with the little qualifier chips ("darks
+     only", "if you wear them") removed. This is both the storage key for its
+     tick and the identity used to spot the same thing already sitting on
+     another step. */
+  function itemText(label){
+    var el = label.querySelector('.name');
+    if(!el) return '';
+    var c = el.cloneNode(true);
+    Array.prototype.slice.call(c.querySelectorAll('.darks,.maybe'))
+      .forEach(function(x){ x.parentNode.removeChild(x); });
+    return c.textContent.replace(/\s+/g, ' ').trim();
+  }
+  function norm(s){ return String(s).replace(/\s+/g, ' ').trim().toLowerCase(); }
+
+  /* Re-read the whole page. Called at startup and after every add, move or
+     undo -- a stale boxes[] would leave a new item untickable, uncounted, and
+     absent from what save() writes. */
+  function indexAll(){
+    stampLayout();
+
+    boxes = [];
+    segBoxes = segs.map(function(s){
+      var bs = Array.prototype.slice.call(s.querySelectorAll('.item input'));
+      bs.forEach(function(b){ boxes.push(b); });
+      return bs;
+    });
+
+    /* Ticks are stored against the ITEM'S OWN TEXT, never its position in the
+       list. The list still grows -- Carolina's cosmetics bag is going in as
+       its own items, and the + button adds more -- and an index-keyed array is
+       discarded wholesale the moment the count changes, silently wiping
+       everything she had already packed. A text key survives adding items,
+       removing them, reordering steps, and moving an item from one step to
+       another; it only breaks when an item is genuinely reworded, which makes
+       it a different item anyway. */
+    var seen = {};
+    keys = boxes.map(function(b){
+      var t = norm(itemText(b.parentNode));
+      seen[t] = (seen[t] || 0) + 1;
+      return seen[t] > 1 ? t + '#' + seen[t] : t;
+    });
+
+    /* data-bound, not a fresh pass: indexAll runs again on every add, and a
+       second listener on the same box would double every save and repaint. */
+    boxes.forEach(function(b){
+      if(b.getAttribute('data-bound')) return;
+      b.setAttribute('data-bound', '1');
+      b.addEventListener('change', function(){ save(); paintMeter(); paintRail(); paintNav(); });
+    });
+  }
 
   function save(){
     try{
@@ -937,18 +1061,17 @@
     }catch(e){ /* nothing to do; the page still works */ }
   }
 
-  boxes.forEach(function(b){
-    b.addEventListener('change', function(){ save(); paintMeter(); paintRail(); paintNav(); });
-  });
+  function repaint(){ save(); paintMeter(); paintRail(); paintNav(); }
 
   document.getElementById('reset').addEventListener('click', function(){
     boxes.forEach(function(b){ b.checked = false; });
     save(); paintMeter(); go(0, true);
   });
 
-  try{
-    var raw = localStorage.getItem(KEY);
-    if(raw){
+  function restoreTicks(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(!raw) return;
       var saved = JSON.parse(raw);
       if(saved && saved.v === 2 && Array.isArray(saved.ticked)){
         var on = {};
@@ -961,8 +1084,322 @@
         boxes.forEach(function(b, i){ b.checked = !!saved[i]; });
         save();
       }
+    }catch(e){ /* private window, blocked storage: start fresh */ }
+  }
+
+  /* ==================================================================== *
+   *  ADDING SOMETHING                                                     *
+   *  The + is on every screen and adds to the step she is looking at. If
+   *  the thing she types already lives on a DIFFERENT step, she is told
+   *  where, and chooses whether to move it -- so the same object never
+   *  quietly ends up ticked in two places.
+   * ==================================================================== */
+
+  /* Which step a section is, as printed on the page ("01".."10"). Stored
+     rather than the array index, so an item does not silently relocate if a
+     step is ever inserted or reordered. */
+  function segNum(seg){
+    var e = seg.querySelector('.num');
+    return e ? e.textContent.replace(/\s+/g, '') : '';
+  }
+  function segByNum(num){
+    for(var i = 0; i < segs.length; i++){ if(segNum(segs[i]) === num) return segs[i]; }
+    return null;
+  }
+  function stepLabel(i){
+    var h = segs[i].querySelector('h2');
+    return 'step ' + segNum(segs[i]) + (h ? ', ' + h.textContent.trim() : '');
+  }
+
+  /* An item in an "added" list no longer inherits the grid its old list gave
+     it, because .list.mult / .list.noq are set on the PARENT. Read the
+     destination and stamp the equivalent per-item class. Runs over every item
+     each time, so an item moved BACK is cleaned up too. */
+  function stampLayout(){
+    Array.prototype.slice.call(document.querySelectorAll('.item')).forEach(function(l){
+      var li = l.parentNode, ul = li && li.parentNode;
+      var added = !!(ul && ul.className && / added(\s|$)/.test(' ' + ul.className));
+      var q = l.querySelector('.qty');
+      var cls = 'item';
+      if(added && !q) cls += ' as-noq';
+      if(added && q && q.textContent.indexOf('×') !== -1) cls += ' as-mult';
+      if(l.className !== cls) l.className = cls;
+    });
+  }
+
+  var custom = (function(){
+    try{
+      var o = JSON.parse(localStorage.getItem(CKEY));
+      return {
+        added: (o && Array.isArray(o.added)) ? o.added : [],
+        moved: (o && Array.isArray(o.moved)) ? o.moved : []
+      };
+    }catch(e){ return { added: [], moved: [] }; }
+  })();
+
+  function saveCustom(){
+    try{
+      localStorage.setItem(CKEY, JSON.stringify({ v: 1, added: custom.added, moved: custom.moved }));
+    }catch(e){ /* blocked storage: it still works for this sitting */ }
+  }
+
+  /* Her own items go in a list of their own rather than into one of the
+     built-in ones. Step 4 has four lists and steps 1 and 10 have none, so
+     "append to the list" has no single answer -- and keeping them together
+     means she can always see what she added. */
+  function addedList(seg){
+    var ul = seg.querySelector('ul.list.added');
+    if(ul) return ul;
+    ul = document.createElement('ul');
+    ul.className = 'list added';
+    var head = document.createElement('li');
+    head.className = 'grp';
+    head.textContent = 'Added by you';
+    ul.appendChild(head);
+    seg.appendChild(ul);
+    return ul;
+  }
+  function pruneAdded(seg){
+    var ul = seg.querySelector('ul.list.added');
+    if(ul && !ul.querySelector('.item')) ul.parentNode.removeChild(ul);
+  }
+
+  function makeItem(name){
+    var li = document.createElement('li');
+    var label = document.createElement('label');
+    label.className = 'item';
+    var inp = document.createElement('input'); inp.type = 'checkbox';
+    var box = document.createElement('span'); box.className = 'box';
+    var qty = document.createElement('span'); qty.className = 'qty'; qty.textContent = '1';
+    var nm  = document.createElement('span'); nm.className  = 'name'; nm.textContent  = name;
+    label.appendChild(inp); label.appendChild(box); label.appendChild(qty); label.appendChild(nm);
+    li.appendChild(label);
+    return li;
+  }
+
+  function findItemLi(key){
+    var labels = Array.prototype.slice.call(document.querySelectorAll('.item'));
+    for(var i = 0; i < labels.length; i++){
+      if(norm(itemText(labels[i])) === key) return labels[i].parentNode;
     }
-  }catch(e){ /* private window, blocked storage: start fresh */ }
+    return null;
+  }
+
+  /* Everything she has added or moved, replayed onto the page at load. Moves
+     run first: an item has to be out of its old list before anything counts
+     what is where. */
+  function applyCustom(){
+    custom.moved.forEach(function(m){
+      var seg = segByNum(m.seg);
+      var li  = seg && findItemLi(m.key);
+      if(li && !seg.contains(li)) addedList(seg).appendChild(li);
+    });
+    custom.added.forEach(function(a){
+      /* If the step numbering ever changes under a saved item, park it on the
+         last step rather than dropping it -- something she typed must not
+         disappear without a trace. */
+      var seg = segByNum(a.seg) || segs[segs.length - 1];
+      addedList(seg).appendChild(makeItem(a.name));
+    });
+  }
+
+  /* Is this already somewhere on the page? Exact name first, then a
+     whole-word phrase match either way round, because the built-ins are
+     written as sentences ("Waterproof hiking boots, already broken in") and
+     she will type "boots". A loose match is only ever OFFERED, never applied:
+     the panel always leaves an "add it anyway", so a false positive costs one
+     tap rather than blocking her. */
+  function wordRun(hay, needle){
+    if(needle.length < 3) return false;
+    var i = hay.indexOf(needle);
+    while(i !== -1){
+      var before = i === 0 ? ' ' : hay.charAt(i - 1);
+      var after  = (i + needle.length >= hay.length) ? ' ' : hay.charAt(i + needle.length);
+      if(!/[a-z0-9]/.test(before) && !/[a-z0-9]/.test(after)) return true;
+      i = hay.indexOf(needle, i + 1);
+    }
+    return false;
+  }
+  function findMatch(q){
+    var want = norm(q);
+    if(!want) return null;
+    var exact = null, loose = null;
+    for(var i = 0; i < segs.length; i++){
+      var labels = Array.prototype.slice.call(segs[i].querySelectorAll('.item'));
+      for(var j = 0; j < labels.length; j++){
+        var text = itemText(labels[j]);
+        var t = norm(text);
+        if(!t) continue;
+        if(t === want){
+          if(!exact) exact = { seg: i, label: labels[j], text: text, exact: true };
+        } else if(!loose && (wordRun(t, want) || wordRun(want, t))){
+          loose = { seg: i, label: labels[j], text: text, exact: false };
+        }
+      }
+    }
+    return exact || loose;
+  }
+
+  /* ---- the panel ---- */
+  var fab     = document.getElementById('addfab');
+  var panel   = document.getElementById('addwrap');
+  var subEl   = document.getElementById('addsub');
+  var inputEl = document.getElementById('addinput');
+  var msgEl   = document.getElementById('addmsg');
+  var btnsEl  = document.getElementById('addbtns');
+  var lastAct = null;   /* what Undo would reverse */
+
+  function short(s){
+    s = String(s);
+    return s.length > 26 ? s.slice(0, 25).replace(/\s+\S*$/, '') + '…' : s;
+  }
+  function say(html, cls){
+    msgEl.className = 'addmsg' + (cls ? ' ' + cls : '');
+    msgEl.innerHTML = html;
+  }
+  function quote(s){
+    var d = document.createElement('div');
+    d.textContent = s;
+    return '“<b>' + d.innerHTML + '</b>”';
+  }
+  function btn(text, kind, fn){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'addbtn' + (kind ? ' ' + kind : '');
+    b.textContent = text;
+    b.addEventListener('click', fn);
+    btnsEl.appendChild(b);
+    return b;
+  }
+
+  /* Typing state. The input is visible, Enter submits, and Undo is offered
+     only while there is something to undo. */
+  function entryState(message, cls){
+    subEl.textContent = 'It goes on ' + stepLabel(cur) + '.';
+    inputEl.hidden = false;
+    inputEl.value = '';
+    say(message || '', cls);
+    btnsEl.innerHTML = '';
+    btn('Add', 'primary', submit);
+    if(lastAct) btn('Undo', '', undo);
+    btn('Done', '', closePanel);
+    try{ inputEl.focus(); }catch(e){}
+  }
+
+  function openPanel(){
+    lastAct = null;
+    panel.hidden = false;
+    entryState('');
+  }
+  function closePanel(){
+    panel.hidden = true;
+    lastAct = null;
+  }
+
+  function submit(){
+    var name = inputEl.value.replace(/\s+/g, ' ').trim();
+    if(!name){ try{ inputEl.focus(); }catch(e){} return; }
+
+    var hit = findMatch(name);
+    if(!hit){ doAdd(name); return; }
+
+    inputEl.hidden = true;
+    btnsEl.innerHTML = '';
+
+    if(hit.seg === cur){
+      /* Already on this very step. Nothing to move, so the only real choice
+         is whether she meant a second, separate thing. */
+      if(hit.exact){
+        say(quote(hit.text) + ' is already on this step.');
+        btn('OK', 'primary', function(){ entryState(''); });
+      } else {
+        say('This step already has ' + quote(hit.text) + '.');
+        btn('Add ' + short(name) + ' as well', 'primary', function(){ doAdd(name); });
+        btn('Cancel', '', function(){ entryState(''); });
+      }
+      return;
+    }
+
+    say(quote(hit.text) + ' is already on ' + stepLabel(hit.seg) + '. Move it here?');
+    btn('Move it here', 'primary', function(){ doMove(hit); });
+    btn('Add ' + short(name) + ' here too', '', function(){ doAdd(name); });
+    btn('Leave it there', '', function(){ entryState(''); });
+  }
+
+  function doAdd(name){
+    var seg = segs[cur];
+    var li = makeItem(name);
+    addedList(seg).appendChild(li);
+
+    var entry = { seg: segNum(seg), name: name };
+    custom.added.push(entry);
+    saveCustom();
+    indexAll(); repaint();
+
+    lastAct = { kind: 'add', li: li, entry: entry, what: name };
+    entryState('Added ' + quote(name) + ' to this step.', 'ok');
+  }
+
+  function doMove(hit){
+    var li   = hit.label.parentNode;
+    var key  = norm(hit.text);
+    var from = hit.seg;
+    var prevParent = li.parentNode, prevNext = li.nextSibling;
+    var prevRecord = null;
+    custom.moved.forEach(function(m){ if(m.key === key) prevRecord = m; });
+
+    addedList(segs[cur]).appendChild(li);
+    pruneAdded(segs[from]);
+
+    /* One record per item -- moving it a second time rewrites the
+       destination rather than stacking up a history. */
+    custom.moved = custom.moved.filter(function(m){ return m.key !== key; });
+    custom.moved.push({ key: key, seg: segNum(segs[cur]) });
+    saveCustom();
+    indexAll(); repaint();
+
+    lastAct = { kind: 'move', li: li, key: key, what: hit.text,
+                prevParent: prevParent, prevNext: prevNext, prevRecord: prevRecord };
+    entryState('Moved ' + quote(hit.text) + ' here from ' + stepLabel(from) + '.', 'ok');
+  }
+
+  /* One step back. A typo that cannot be taken back would sit on her list for
+     the whole trip, so the add flow carries its own reverse. */
+  function undo(){
+    if(!lastAct) return;
+    var act = lastAct, seg = segs[cur];
+    lastAct = null;
+
+    if(act.kind === 'add'){
+      if(act.li.parentNode) act.li.parentNode.removeChild(act.li);
+      custom.added = custom.added.filter(function(a){ return a !== act.entry; });
+    } else {
+      act.prevParent.insertBefore(act.li, act.prevNext);
+      custom.moved = custom.moved.filter(function(m){ return m.key !== act.key; });
+      if(act.prevRecord) custom.moved.push(act.prevRecord);
+    }
+    pruneAdded(seg);
+    saveCustom();
+    indexAll(); repaint();
+
+    entryState(act.kind === 'add'
+      ? 'Removed ' + quote(act.what) + '.'
+      : quote(act.what) + ' is back where it was.');
+  }
+
+  fab.addEventListener('click', openPanel);
+  panel.addEventListener('click', function(e){ if(e.target === panel) closePanel(); });
+  inputEl.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.keyCode === 13){ e.preventDefault(); submit(); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(!panel.hidden && (e.key === 'Escape' || e.keyCode === 27)) closePanel();
+  });
+
+  /* ---- start ---- */
+  applyCustom();
+  indexAll();
+  restoreTicks();
 
   var start = 0;
   try{
