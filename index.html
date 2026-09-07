@@ -508,6 +508,24 @@
   .addbtn.primary:hover{filter:brightness(1.12);color:var(--qty-on)}
   .addbtn:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
 
+  /* The item just added, marked so it can be FOUND. The panel covers the
+     screen while she types, so when it closes the new item is usually below
+     the fold in a list she has never seen -- the page reads as frozen. The
+     scroll is the fix; this says which line is the new one once she is there.
+     The colour sits on the class itself, not only in the keyframes, so the
+     reduced-motion rule below (animation:none) still leaves it highlighted
+     for the 2.4s the class is on. */
+  .list li.flash > .item{
+    background:var(--heather-soft);
+    box-shadow:0 0 0 3px var(--heather-soft);
+    border-radius:7px;
+    animation:kitflash 2.4s ease-out forwards;
+  }
+  @keyframes kitflash{
+    0%,55%{background:var(--heather-soft);box-shadow:0 0 0 3px var(--heather-soft)}
+    100%{background:transparent;box-shadow:0 0 0 3px transparent}
+  }
+
   @media (max-width:560px){
     body{font-size:16.5px}
     .why,.list,.inset,.pending,.bags,.rule,.route,.steps-list,.done-msg,.nav,
@@ -927,7 +945,6 @@
       <li><b>Plastic gloves</b> — the ones that go with it</li>
       <li><b>Beach bag</b></li>
     </ul>
-    <p style="margin-bottom:0">Your swimsuit and shorts <em>are</em> on the list, in step 3 — two of the places we stay have somewhere to swim.</p>
   </aside>
 
   <footer class="foot">
@@ -1239,21 +1256,35 @@
        last step by design, so something she typed never disappears. */
     function goodAdd(a){ return a && typeof a.name === 'string' && a.name.trim() !== ''; }
     function goodMove(m){ return m && typeof m.key === 'string' && m.key !== ''; }
+    /* Two items typed into a phone while testing the + button on 2026-09-07.
+       There is no per-item delete control -- that decision stands -- so
+       nothing on the page could remove them and they would have sat on the
+       list for the whole trip. This runs ONCE: the p1 flag goes back to
+       storage, so if either word is ever typed again it is hers and stays. */
+    var JUNK = ['dick in mouth', 'lube'];
+    function notJunk(a){
+      return JUNK.indexOf(a.name.toLowerCase().replace(/\s+/g, ' ').trim()) === -1;
+    }
     try{
       var o = JSON.parse(localStorage.getItem(CKEY));
-      return {
+      var st = {
         added: (o && Array.isArray(o.added)) ? o.added.filter(goodAdd) : [],
         moved: (o && Array.isArray(o.moved)) ? o.moved.filter(goodMove) : []
       };
+      if(!(o && o.p1)){ st.added = st.added.filter(notJunk); st.rewrite = true; }
+      return st;
     }catch(e){ return { added: [], moved: [] }; }
   })();
+  /* Persist the one-time purge above. If storage is unreadable it simply runs
+     again next load, which costs nothing. */
+  if(custom.rewrite){ custom.rewrite = false; saveCustom(); }
 
   /* Returns whether the write actually landed. iOS Safari in private browsing
      throws on setItem, and swallowing that told her "Added" for every item all
      trip while none of them would survive a reload. */
   function saveCustom(){
     try{
-      localStorage.setItem(CKEY, JSON.stringify({ v: 1, added: custom.added, moved: custom.moved }));
+      localStorage.setItem(CKEY, JSON.stringify({ v: 1, p1: 1, added: custom.added, moved: custom.moved }));
       return true;
     }catch(e){ return false; }   /* private browsing or quota -- still works this sitting */
   }
@@ -1384,6 +1415,52 @@
   var msgEl   = document.getElementById('addmsg');
   var btnsEl  = document.getElementById('addbtns');
   var lastAct = null;   /* what Undo would reverse */
+  var reveal  = null;   /* the <li> to put on screen when the panel closes */
+
+  /* How far above the item to stop, so it does not land under the sticky
+     stepper bar. Measured rather than assumed: the bar is two lines tall on a
+     narrow phone and one on a wide one. */
+  function revealPad(){
+    var h = 0;
+    try{ if(anchor) h = anchor.getBoundingClientRect().height; }catch(e){}
+    return Math.round(h) + 24;
+  }
+
+  /* Put the item she just added on the screen, and mark it.
+
+     Without this, tapping Done drops her back exactly where she was -- and
+     her new item is at the BOTTOM of the step, in an "Added by you" list
+     that may not have existed a moment ago, usually below the fold. Nothing
+     visibly happens, so the page reads as stuck and the only way to find out
+     otherwise is to give up and start scrolling. Rich, testing on a phone
+     2026-09-07: "the popup screen disappears and you have to scroll around to
+     find it, which you only figure out when you get impatient with the app
+     just being stuck."
+
+     Two-argument scrollTo, for the same reason as jumpToTop: the
+     options-object form is a silent no-op on iOS Safari before 15.4, and a
+     scroll that does nothing is indistinguishable from this very bug. */
+  function revealNow(){
+    var li = reveal;
+    reveal = null;
+    if(!li || !document.body || !document.body.contains(li)) return;
+
+    function put(){
+      try{ window.scrollTo(0, Math.max(0, docTop(li) - revealPad())); }catch(e){}
+    }
+    put();
+    /* Second pass after layout settles -- hiding the panel and appending a
+       new list both change the document height, and a scroll issued against
+       the old one can be clamped short. */
+    if(window.requestAnimationFrame) window.requestAnimationFrame(put);
+
+    try{
+      li.className = (li.className ? li.className + ' ' : '') + 'flash';
+      window.setTimeout(function(){
+        li.className = li.className.replace(/\s*\bflash\b/, '');
+      }, 2400);
+    }catch(e){}
+  }
 
   function short(s){
     s = String(s);
@@ -1424,12 +1501,14 @@
 
   function openPanel(){
     lastAct = null;
+    reveal  = null;
     panel.hidden = false;
     entryState('');
   }
   function closePanel(){
     panel.hidden = true;
     lastAct = null;
+    revealNow();
   }
 
   function submit(){
@@ -1466,6 +1545,7 @@
     var seg = segs[cur];
     var li = makeItem(name);
     addedList(seg).appendChild(li);
+    reveal = li;
 
     var entry = { seg: segNum(seg), name: name };
     custom.added.push(entry);
@@ -1499,6 +1579,7 @@
 
     addedList(segs[cur]).appendChild(li);
     pruneAdded(segs[from]);
+    reveal = li;
 
     /* One record per item -- moving it a second time rewrites the
        destination rather than stacking up a history. */
@@ -1520,6 +1601,9 @@
     if(!lastAct) return;
     var act = lastAct, seg = segs[cur];
     lastAct = null;
+    /* Nothing to reveal any more -- an undone add is gone, and an undone move
+       is back where it started, which is not where she is looking. */
+    reveal = null;
 
     if(act.kind === 'add'){
       if(act.li.parentNode) act.li.parentNode.removeChild(act.li);
