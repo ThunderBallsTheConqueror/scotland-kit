@@ -9,6 +9,15 @@
 <meta name="theme-color" content="#111613" media="(prefers-color-scheme:dark)">
 <meta name="apple-mobile-web-app-title" content="Scotland">
 <meta name="mobile-web-app-capable" content="yes">
+<!-- Added 2026-09-23 with the Reader-Mode work. In Home-Screen (standalone)
+     mode there is no Safari toolbar, so there is no AA menu, so Reader cannot
+     be offered OR auto-applied at all -- it is the one escape that does not
+     depend on out-guessing a closed-source extractor. iOS >= 15.4 honours the
+     generic mobile-web-app-capable above; this is what older iOS reads, and
+     the page was already written for standalone (position:fixed + safe-area
+     insets throughout). -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127890;</text></svg>">
 <style>
 /* The artifact host injects this reset; reproduce it so the hosted copy and the
@@ -44,6 +53,14 @@
     --loch-soft:#E4EFF4;
     --loch-edge:#A9C9D8;
     --done:#4F7A5A;
+    --ph-orient:#4F6470; --ph-orient-soft:#E7ECEE;
+    --ph-gather:#6C3A6E; --ph-gather-soft:#F1E7F2;
+    --ph-load:#1F5C7D;   --ph-load-soft:#E1EDF3;
+    --ph-carry:#2F6A5C;  --ph-carry-soft:#E3EFEB;
+    --ph-leave:#39413C;  --ph-leave-soft:#E8EBE8;
+    --ph-arrive:#8A4A2B; --ph-arrive-soft:#F6E8E0;
+    --ph-on:#FFFFFF;
+    --phase:var(--ph-gather); --phase-soft:var(--ph-gather-soft);
     --shadow:0 1px 2px rgba(26,35,30,.06), 0 6px 18px rgba(26,35,30,.05);
     --radius:10px;
     color-scheme:light;
@@ -68,6 +85,13 @@
       --loch-soft:#122630;
       --loch-edge:#2C4C5C;
       --done:#8FBE9B;
+      --ph-orient:#9BB4BE; --ph-orient-soft:#182126;
+      --ph-gather:#C99ACD; --ph-gather-soft:#2A1D2C;
+      --ph-load:#7FC1DD;   --ph-load-soft:#12262F;
+      --ph-carry:#7FC9B6;  --ph-carry-soft:#122622;
+      --ph-leave:#AFBAB2;  --ph-leave-soft:#1B211D;
+      --ph-arrive:#E0A277; --ph-arrive-soft:#2A1B12;
+      --ph-on:#12171A;
       --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.28);
       color-scheme:dark;
     }
@@ -91,11 +115,29 @@
     --loch-soft:#122630;
     --loch-edge:#2C4C5C;
     --done:#8FBE9B;
+    --ph-orient:#9BB4BE; --ph-orient-soft:#182126;
+    --ph-gather:#C99ACD; --ph-gather-soft:#2A1D2C;
+    --ph-load:#7FC1DD;   --ph-load-soft:#12262F;
+    --ph-carry:#7FC9B6;  --ph-carry-soft:#122622;
+    --ph-leave:#AFBAB2;  --ph-leave-soft:#1B211D;
+    --ph-arrive:#E0A277; --ph-arrive-soft:#2A1B12;
+    --ph-on:#12171A;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.28);
     color-scheme:dark;
   }
 
   *{box-sizing:border-box}
+
+  /* ---------- Reader Mode immunity: the .p base ----------
+     Prose on this page is <div class="p ..."> rather than <p>, because the
+     Reader-Mode extractors' candidate selector is `p, pre, article` and a page
+     with no paragraphs is not an article. See 54ef62-readerproof.py.
+     <p> carries a 1em UA margin that a <div> does not, and `.wheels` is the one
+     prose element here with no margin rule of its own -- it relied on that
+     default. This restores it. It is deliberately the FIRST .p rule in the
+     sheet: every class rule below is also 0,1,0 specificity and must win on
+     source order. Do not move it down. */
+  .p{display:block;margin:1em 0}
   body{
     margin:0;
     background:var(--paper);
@@ -112,7 +154,7 @@
   .eyebrow{
     font-family:"DM Mono",ui-monospace,monospace;
     font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--heather-ink);margin:0 0 12px;
+    color:var(--phase);margin:0 0 12px;text-wrap:balance;
   }
   h1{
     font-family:"Bricolage Grotesque","Karla",sans-serif;
@@ -134,7 +176,7 @@
   }
   .meter .count em{color:var(--mid);font-style:normal}
   .track{flex:1;height:7px;border-radius:100px;background:var(--line);overflow:hidden}
-  .fill{height:100%;width:0%;background:var(--loch);border-radius:100px;transition:width .28s ease}
+  .fill{height:100%;width:0%;background:var(--phase);border-radius:100px;transition:width .28s ease}
   .reset{
     font-family:"Karla",sans-serif;font-size:12.5px;color:var(--mid);
     background:none;border:1px solid var(--line2);border-radius:100px;
@@ -158,14 +200,73 @@
   .rail button:hover{border-color:var(--heather);color:var(--heather-ink)}
   .rail button:focus-visible{outline:2px solid var(--loch);outline-offset:2px}
   .rail button.did{background:var(--done);border-color:var(--done);color:#fff}
-  .rail button.on{background:var(--heather);border-color:var(--heather);color:var(--qty-on)}
+  /* Nothing to tick is not the same as finished. Painting these green
+     made the rail claim two steps were complete before she had started
+     -- caught by the first screenshot this page has ever had. */
+  .rail button.none{background:transparent;border-color:var(--phase);color:var(--phase)}
+  .rail button.on{background:var(--phase);border-color:var(--phase);color:var(--ph-on)}
+
+
+  /* ---------- phase: colour encodes WHERE YOU ARE IN THE JOB ----------
+     Six phases, cold to warm, walked across ten steps. Not decoration:
+     the hue answers "am I still gathering, or am I loading the case?".
+     Gorse (yellow) is deliberately in NO phase -- it belongs to the
+     no-white laundry rule alone, and a second yellow would dilute the
+     one thing on this page that must shout. */
+  .seg[data-phase="orient"]{--phase:var(--ph-orient);--phase-soft:var(--ph-orient-soft)}
+  .seg[data-phase="gather"]{--phase:var(--ph-gather);--phase-soft:var(--ph-gather-soft)}
+  .seg[data-phase="load"]  {--phase:var(--ph-load);  --phase-soft:var(--ph-load-soft)}
+  .seg[data-phase="carry"] {--phase:var(--ph-carry); --phase-soft:var(--ph-carry-soft)}
+  .seg[data-phase="leave"] {--phase:var(--ph-leave); --phase-soft:var(--ph-leave-soft)}
+  .seg[data-phase="arrive"]{--phase:var(--ph-arrive);--phase-soft:var(--ph-arrive-soft)}
+  :root[data-cur="orient"]{--phase:var(--ph-orient);--phase-soft:var(--ph-orient-soft)}
+  :root[data-cur="gather"]{--phase:var(--ph-gather);--phase-soft:var(--ph-gather-soft)}
+  :root[data-cur="load"]  {--phase:var(--ph-load);  --phase-soft:var(--ph-load-soft)}
+  :root[data-cur="carry"] {--phase:var(--ph-carry); --phase-soft:var(--ph-carry-soft)}
+  :root[data-cur="leave"] {--phase:var(--ph-leave); --phase-soft:var(--ph-leave-soft)}
+  :root[data-cur="arrive"]{--phase:var(--ph-arrive);--phase-soft:var(--ph-arrive-soft)}
+
+  /* the heading sits in a band of its own phase, so advancing a step
+     visibly changes the room instead of only changing the words */
+  .seg-head{
+    background:var(--phase-soft);border-radius:var(--radius);
+    padding:14px 16px;margin-left:-16px;margin-right:-16px;
+    transition:background .3s ease;
+  }
+  .steps{border-bottom:2px solid var(--phase);transition:border-color .3s ease}
+
+  /* ---------- the tick has to carry the feedback on its own ----------
+     navigator.vibrate does not exist in Safari on iOS -- not partial,
+     absent -- so on an iPhone the haptic is silently nothing. The wash
+     and the box scale are the substitute, not a garnish. */
+  @keyframes tickwash{from{background:var(--phase-soft)}to{background:transparent}}
+  .item input:checked ~ .box{transform:scale(1.06)}
+  .item.justticked{animation:tickwash .5s ease-out}
+  .item .box{transition:background .12s,border-color .12s,transform .12s}
+
+  /* Resume pulse -- the signature move's landing */
+  @keyframes findpulse{
+    0%,100%{box-shadow:0 0 0 0 transparent}
+    30%    {box-shadow:0 0 0 4px var(--phase-soft), 0 0 0 6px var(--phase)}
+  }
+  .item.found{animation:findpulse 1.5s ease-out}
+  .resume{
+    font-family:"Karla",sans-serif;font-size:12.5px;font-weight:700;
+    color:var(--ph-on);background:var(--phase);border:0;border-radius:100px;
+    padding:4px 12px;cursor:pointer;white-space:nowrap;
+  }
+  .resume:disabled{background:var(--line2);color:var(--mid);cursor:default}
+  .resume:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){
+    .item.justticked,.item.found{animation:none}
+  }
 
   /* ---------- a segment ---------- */
   .seg{padding-top:34px}
   .seg-head{display:flex;gap:15px;align-items:baseline;margin:0 0 4px}
   .num{
     font-family:"DM Mono",ui-monospace,monospace;font-size:13px;font-weight:500;
-    color:var(--heather-ink);flex:0 0 auto;padding-top:5px;
+    color:var(--phase);flex:0 0 auto;padding-top:5px;
     font-variant-numeric:tabular-nums;
   }
   .seg h2{
@@ -216,7 +317,7 @@
     grid-column:2;grid-row:1;
     width:34px;height:34px;border-radius:50%;
     display:grid;place-items:center;
-    background:var(--heather);color:var(--qty-on);
+    background:var(--phase);color:var(--ph-on);
     font-family:"DM Mono",ui-monospace,monospace;
     font-size:15px;font-weight:500;line-height:1;
     font-variant-numeric:tabular-nums;
@@ -260,7 +361,7 @@
   .box-card > header{padding:13px 15px 11px;border-bottom:1px solid var(--line);display:flex;gap:11px}
   .box-card .o{
     width:23px;height:23px;border-radius:50%;flex:0 0 auto;margin-top:1px;
-    background:var(--heather);color:var(--qty-on);display:grid;place-items:center;
+    background:var(--phase);color:var(--ph-on);display:grid;place-items:center;
     font-family:"DM Mono",ui-monospace,monospace;font-size:12px;line-height:1;
   }
   .box-card h3{
@@ -295,6 +396,60 @@
 
   .stack{margin:0 0 0 39px;display:grid;gap:11px}
 
+
+  /* ---------- three steps that were the same shape three times ----------
+     7, 8 and 9 were all "white card, rows of text". Three identical screens
+     in a row read as one screen shown three times, and that is what made
+     the back half of this page feel long. Each is now shaped like what it
+     actually is. */
+
+  /* 7 -- the fiddly one. Twelve small objects. A tall thin list makes them
+     feel like twelve decisions; a dense grid makes them one handful. */
+  .list.pocket{display:grid;grid-template-columns:1fr}
+  .list.pocket li:first-child{border-top:0}
+  .list.pocket .item{padding:9px 13px}
+  .list.pocket .note{font-size:13.5px}
+  @media (min-width:600px){
+    .list.pocket{grid-template-columns:1fr 1fr}
+    .list.pocket li{border-top:1px solid var(--line)}
+    .list.pocket li:nth-child(-n+2){border-top:0}
+    .list.pocket li:nth-child(odd){border-right:1px solid var(--line)}
+  }
+
+  /* 8 -- four things, and they go ON HER rather than in a bag. Big tiles,
+     so the last screen before the door does not look like more admin. */
+  .list.worn{background:none;border:0;box-shadow:none;display:grid;gap:10px;overflow:visible}
+  .list.worn li + li{border-top:0}
+  .list.worn .item{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:17px 18px;grid-template-columns:26px 1fr;
+  }
+  .list.worn .qty{display:none}
+  .list.worn .name{grid-column:2;font-size:18.5px;font-weight:700;padding-top:1px}
+  .list.worn .note{grid-column:2;font-size:14.5px}
+
+  /* 9 -- the last gate. Severity from weight and from the phase's own
+     graphite, never from a warning colour: yellow is spent on the one rule
+     that has to shout louder than anything else here. */
+  .list.gate{background:var(--phase-soft);border-color:var(--phase)}
+  .list.gate li + li{border-top:1px solid var(--phase)}
+  .list.gate .item{padding:15px 16px}
+  .list.gate .item:hover{background:transparent}
+  .list.gate .name{font-size:17px;font-weight:700}
+  .list.gate .note{color:var(--ink2)}
+
+  /* ---------- step 4 is the peak ----------
+     The four-quarter map is the one screen that changes how she thinks
+     about the case, so it gets the largest heading and the most room.
+     Before this it looked exactly as important as "Small things". */
+  .seg[data-phase="load"] .seg-head{padding:22px 16px}
+  .seg[data-phase="load"] h2{font-size:clamp(29px,6.3vw,41px)}
+  .seg[data-phase="load"] .case{gap:13px}
+  .seg[data-phase="load"] .box-card{border-color:var(--phase)}
+  .seg[data-phase="load"] .box-card > header{border-bottom-color:var(--phase)}
+  .wheels{color:var(--phase)}
+  .wheels::before,.wheels::after{border-top-color:var(--phase)}
+
   /* ---------- inset cards ---------- */
   .inset{
     margin:0 0 14px 39px;padding:15px 17px;border-radius:var(--radius);
@@ -307,7 +462,7 @@
   }
   .inset ul{margin:0;padding-left:19px;color:var(--ink2);font-size:15px}
   .inset li{margin-bottom:2px}
-  .inset p{margin:9px 0 0;font-size:14px;color:var(--mid)}
+  .inset p,.inset .p{margin:9px 0 0;font-size:14px;color:var(--mid)}
 
   .pending{
     margin:0 0 14px 39px;padding:15px 17px;border-radius:var(--radius);
@@ -349,8 +504,8 @@
     font-size:clamp(23px,5vw,31px);line-height:1.06;letter-spacing:-.02em;
     margin:0 0 10px;color:var(--ink);text-wrap:balance;
   }
-  .rule p{margin:0;color:var(--ink2);max-width:56ch}
-  .rule p + p{margin-top:9px}
+  .rule p,.rule .p{margin:0;color:var(--ink2);max-width:56ch}
+  .rule p + p,.rule .p + .p{margin-top:9px}
 
   .route{
     display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0 39px;padding:0;list-style:none;
@@ -369,7 +524,7 @@
   .steps-list li{display:grid;grid-template-columns:34px 1fr;column-gap:13px;align-items:start}
   .steps-list .s{
     width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
-    background:var(--heather);color:var(--qty-on);
+    background:var(--phase);color:var(--ph-on);
     font-family:"DM Mono",ui-monospace,monospace;font-size:15px;line-height:1;
   }
   .steps-list b{display:block;font-weight:700;padding-top:7px}
@@ -388,7 +543,7 @@
     border-radius:100px;cursor:pointer;padding:13px 22px;
     border:1px solid transparent;line-height:1.2;
   }
-  .nav .next{background:var(--heather);color:var(--qty-on);flex:1;text-align:left}
+  .nav .next{background:var(--phase);color:var(--ph-on);flex:1;text-align:left}
   .nav .next:hover{filter:brightness(1.12)}
   .nav .next span{display:block;font-weight:400;font-size:12.5px;opacity:.72;margin-top:2px}
   .nav .back{background:none;color:var(--mid);border-color:var(--line2);flex:0 0 auto}
@@ -414,7 +569,7 @@
     margin:44px 0 0;padding-top:20px;border-top:1px solid var(--line);
     font-size:14px;color:var(--mid);max-width:62ch;
   }
-  .foot p{margin:0 0 8px}
+  .foot p,.foot .p{margin:0 0 8px}
   .foot b{color:var(--ink2)}
 
   /* Warm-trip leftovers. Deliberately NOT a .seg: the copy says "Ten short
@@ -432,7 +587,7 @@
     letter-spacing:.13em;text-transform:uppercase;color:var(--heather);
     display:block;margin-bottom:8px;
   }
-  .warm p{margin:0 0 9px}
+  .warm p,.warm .p{margin:0 0 9px}
   .warm ul{margin:0;padding-left:19px}
   .warm li{margin-bottom:3px}
   .warm b{color:var(--ink)}
@@ -588,9 +743,9 @@
 <div class="wrap">
 
   <header class="mast">
-    <p class="eyebrow">Carolina · 26 Sep – 9 Oct 2026 · 13 nights</p>
+    <div class="p eyebrow noreader-extra">Carolina · 26 Sep – 9 Oct 2026 · 13 nights</div>
     <h1>Scotland Kit List</h1>
-    <p class="dek">Ten short steps, one screen at a time. Do a step, tap <b>Next</b>, come back later — the page remembers where you got to.</p>
+    <div class="p dek noreader-extra">Ten short steps, one screen at a time. Do a step, tap <b>Next</b>, come back later — the page remembers where you got to.</div>
   </header>
 
   <!-- Zero-height, NON-STICKY scroll target for "tap Next -> jump to the top".
@@ -607,15 +762,16 @@
     <div class="meter">
       <span class="count"><span id="n">0</span><em> packed</em></span>
       <div class="track"><div class="fill" id="fill"></div></div>
+      <button class="resume" id="resume" type="button">Resume</button>
       <button class="reset" id="reset" type="button">Start over</button>
     </div>
     <div class="rail" id="rail"></div>
   </div>
 
   <!-- ============ 1 ============ -->
-  <section class="seg" data-short="Your cosmetics bag">
+  <section class="seg" data-phase="orient" data-short="Your cosmetics bag">
     <div class="seg-head"><span class="num">01</span><h2>Before you touch a bag</h2></div>
-    <p class="why">Two things decide everything else on this list. Read them once and the other ten steps make sense.</p>
+    <div class="p why noreader-extra">Two things decide everything else on this list. Read them once and the other ten steps make sense.</div>
     <div class="bags">
       <div class="bag">
         <span class="k">Stays in the car</span>
@@ -636,8 +792,8 @@
     <div class="rule">
       <span class="tag">The one rule</span>
       <h3>No white clothes. Not one.</h3>
-      <p>Clothes get washed about <b>every 4 days</b> on the trip. Anything white in the pile has to go through the machine <b>on its own separate cycle</b> — an extra hour and a half in a laundromat instead of being outside.</p>
-      <p>Darks and colors only. Navy, black, gray, green, burgundy, brown. Anything marked <span class="darks">darks only</span> later is one to check twice.</p>
+      <div class="p noreader-extra">Clothes get washed about <b>every 4 days</b> on the trip. Anything white in the pile has to go through the machine <b>on its own separate cycle</b> — an extra hour and a half in a laundromat instead of being outside.</div>
+      <div class="p noreader-extra">Darks and colors only. Navy, black, gray, green, burgundy, brown. Anything marked <span class="darks">darks only</span> later is one to check twice.</div>
     </div>
     <ul class="route">
       <li><b>Edinburgh</b> 27–28 Sep · <i>rain 43%</i></li>
@@ -651,11 +807,11 @@
   </section>
 
   <!-- ============ 2 ============ -->
-  <section class="seg" data-short="Five days of clothes">
+  <section class="seg" data-phase="gather" data-short="Five days of clothes">
     <div class="seg-head"><span class="num">02</span><h2>Your cosmetics bag</h2></div>
-    <p class="why">One bag for everything you put on yourself — <strong>your cosmetics bag and your wash bag are the same bag on this trip.</strong> One thing to carry in at night instead of two, and one thing to leave behind instead of two.</p>
-    <p class="why">Anything liquid goes in a sealed zip-top bag <em>inside</em> it. Cabin pressure makes bottles leak, and a leak at the bottom of a suitcase ruins everything packed under it.</p>
-    <p class="why">It lives in the suitcase and comes into the room every night. It is <em>not</em> the small kit you keep with you on the plane — that one is step 6, and a few things are deliberately duplicated between them.</p>
+    <div class="p why noreader-extra">One bag for everything you put on yourself — <strong>your cosmetics bag and your wash bag are the same bag on this trip.</strong> One thing to carry in at night instead of two, and one thing to leave behind instead of two.</div>
+    <div class="p why noreader-extra">Anything liquid goes in a sealed zip-top bag <em>inside</em> it. Cabin pressure makes bottles leak, and a leak at the bottom of a suitcase ruins everything packed under it.</div>
+    <div class="p why noreader-extra">It lives in the suitcase and comes into the room every night. It is <em>not</em> the small kit you keep with you on the plane — that one is step 6, and a few things are deliberately duplicated between them.</div>
     <div class="pending">
       <b>Your skin care routine is in now — cleanser, serum, face sunscreen — taken from your own list.</b> If it runs to more steps than that, send them and they come back here as their own boxes. <b>Makeup still needs a list of its own.</b> Send Rich what is actually in it and it works the same way.
     </div>
@@ -701,10 +857,10 @@
   </section>
 
   <!-- ============ 3 ============ -->
-  <section class="seg" data-short="The suitcase">
+  <section class="seg" data-phase="gather" data-short="The suitcase">
     <div class="seg-head"><span class="num">03</span><h2>Count out five days of clothes</h2></div>
-    <p class="why">Not in the bag yet — <strong>on the bed, in piles you can count.</strong> Five days covers the four between washes plus one spare for the day something gets soaked at the Fairy Pools.</p>
-    <p class="why">This is the step that decides whether the suitcase is liveable. Count it now rather than guessing, because you'll only ever open it standing behind a car.</p>
+    <div class="p why noreader-extra">Not in the bag yet — <strong>on the bed, in piles you can count.</strong> Five days covers the four between washes plus one spare for the day something gets soaked at the Fairy Pools.</div>
+    <div class="p why noreader-extra">This is the step that decides whether the suitcase is liveable. Count it now rather than guessing, because you'll only ever open it standing behind a car.</div>
     <ul class="list mult">
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">6 ×</span><span class="name">Underwear<span class="darks">darks only</span></span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">6 ×</span><span class="name">Socks<span class="darks">darks only</span></span><span class="note">Make four of them thick walking socks. Cotton stays wet all day; wool doesn't.</span></label></li>
@@ -725,10 +881,10 @@
   </section>
 
   <!-- ============ 4 ============ -->
-  <section class="seg" data-short="Digital packing">
+  <section class="seg" data-phase="load" data-short="Digital packing">
     <div class="seg-head"><span class="num">04</span><h2>The suitcase, in four quarters</h2></div>
-    <p class="why">Lay the suitcase open and flat with <strong>the wheel end nearest you</strong>. That end is the bottom; the far end is the top. Keep it that way round for the whole pack, and each thing gets a fixed home you can find without looking.</p>
-    <p class="why">Roll everything tight rather than folding — rolls take about a third less room, crease less, and will stand on their edge like books so you can see every item from above. <strong>Fill in the order of the numbers</strong>, bottom half first.</p>
+    <div class="p why noreader-extra">Lay the suitcase open and flat with <strong>the wheel end nearest you</strong>. That end is the bottom; the far end is the top. Keep it that way round for the whole pack, and each thing gets a fixed home you can find without looking.</div>
+    <div class="p why noreader-extra">Roll everything tight rather than folding — rolls take about a third less room, crease less, and will stand on their edge like books so you can see every item from above. <strong>Fill in the order of the numbers</strong>, bottom half first.</div>
     <div class="case">
       <div class="box-card ll">
         <header><span class="o">1</span><div><h3>Lower left</h3><span class="k">Over the wheels · the heaviest things</span></div></header>
@@ -758,7 +914,7 @@
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Brown noise machine</span><span class="note">Seven different rooms in thirteen nights and not one of them sounds like home. Worth the space.</span></label></li>
         </ul>
       </div>
-      <p class="wheels">Wheels along this edge</p>
+      <div class="p wheels noreader-extra">Wheels along this edge</div>
       <div class="box-card ul">
         <header><span class="o">3</span><div><h3>Upper left</h3><span class="k">The daily clothes</span></div></header>
         <ul class="list noq">
@@ -790,13 +946,13 @@
   </section>
 
   <!-- ============ 5 ============ -->
-  <section class="seg" data-short="Two bags for the plane">
+  <section class="seg" data-phase="carry" data-short="Two bags for the plane">
     <div class="seg-head"><span class="num">05</span><h2>Digital packing</h2></div>
-    <p class="why">Bags done — this is the part that does not go in them. <strong>The downloads take hours and they need wifi</strong>, so start them running first and work through the rest of this screen while they finish.</p>
-    <p class="why">Skye and Mull have patchy signal and several of the drives have none at all. Anything that needs to load will simply not load. If it isn't downloaded, it doesn't exist on this trip.</p>
+    <div class="p why noreader-extra">Bags done — this is the part that does not go in them. <strong>The downloads take hours and they need wifi</strong>, so start them running first and work through the rest of this screen while they finish.</div>
+    <div class="p why noreader-extra">Skye and Mull have patchy signal and several of the drives have none at all. Anything that needs to load will simply not load. If it isn't downloaded, it doesn't exist on this trip.</div>
     <div class="inset">
       <span class="k">Rich is sending you the itinerary</span>
-      <p style="margin-top:0">He'll share the full trip from <b>TripIt</b> — every flight, hotel, ferry and booking, in order, on your phone. Install it and sign in first so the invitation has somewhere to land, then tell him which email address you used.</p>
+      <div class="p noreader-extra" style="margin-top:0">He'll share the full trip from <b>TripIt</b> — every flight, hotel, ferry and booking, in order, on your phone. Install it and sign in first so the invitation has somewhere to land, then tell him which email address you used.</div>
     </div>
     <ul class="list">
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">TripIt installed and signed in</span><span class="note">Then tell Rich the email you signed in with — that's the address he shares the trip to.</span></label></li>
@@ -810,10 +966,10 @@
   </section>
 
   <!-- ============ 6 ============ -->
-  <section class="seg" data-short="Small things">
+  <section class="seg" data-phase="carry" data-short="Small things">
     <div class="seg-head"><span class="num">06</span><h2>Two bags for the plane</h2></div>
-    <p class="why">A big one with a little one <strong>inside</strong> it, so at the gate they count as one. The little one comes out on the plane, lives under the seat, and becomes your day pack for every walk in Scotland.</p>
-    <p class="why">Some of this duplicates the cosmetics bag on purpose. Those are in the car; this is the kit that gets you through a night flight and a full day without opening the suitcase.</p>
+    <div class="p why noreader-extra">A big one with a little one <strong>inside</strong> it, so at the gate they count as one. The little one comes out on the plane, lives under the seat, and becomes your day pack for every walk in Scotland.</div>
+    <div class="p why noreader-extra">Some of this duplicates the cosmetics bag on purpose. Those are in the car; this is the kit that gets you through a night flight and a full day without opening the suitcase.</div>
     <div class="inset">
       <span class="k">Rich is carrying these — don't pack them</span>
       <ul>
@@ -824,7 +980,7 @@
         <li>Travel sickness tablets for the Staffa boat</li>
         <li>Power bank</li>
       </ul>
-      <p>They're covered — they're just not yours to remember. Everything else on this page is.</p>
+      <div class="p noreader-extra">They're covered — they're just not yours to remember. Everything else on this page is.</div>
     </div>
     <div class="stack">
       <div class="box-card">
@@ -842,7 +998,6 @@
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Phone</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Phone charging cable</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Wall charger or plug block</span><span class="note">Bring this one in here rather than in the suitcase — so you can charge at the gate on the way home.</span></label></li>
-          <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">UK plug adapter</span><span class="note">Type G — the big three-pin one. Nothing you own goes into a British socket without it, and it is the last thing you want to be hunting for at seven in the morning in Edinburgh.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Headphone adapter</span><span class="note">For the seat-back screen on the overnight flight, if your headphones are wireless.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Car charger</span><span class="note">You are in the rental car within an hour of landing, long before the suitcase gets opened.</span></label></li>
           <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Headphones</span><span class="note">The reason you did step 5.</span></label></li>
@@ -890,10 +1045,10 @@
   </section>
 
   <!-- ============ 7 ============ -->
-  <section class="seg" data-short="Wear on the plane">
+  <section class="seg" data-phase="carry" data-short="Wear on the plane">
     <div class="seg-head"><span class="num">07</span><h2>Small things, outside pockets</h2></div>
-    <p class="why">The ones everyone forgets, because they're too small to picture. They go in the <strong>outside pockets</strong> of the suitcase, so finding a flashlight never means opening the whole thing in a dark parking lot.</p>
-    <ul class="list">
+    <div class="p why noreader-extra">The ones everyone forgets, because they're too small to picture. They go in the <strong>outside pockets</strong> of the suitcase, so finding a flashlight never means opening the whole thing in a dark parking lot.</div>
+    <ul class="list pocket">
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Gloves</span><span class="note">The matching hat is in your plane bag, not here.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Buff or neck warmer</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Blister bandages</span><span class="note">There's a walk almost every day. Put one on the moment something rubs, not after.</span></label></li>
@@ -910,11 +1065,11 @@
   </section>
 
   <!-- ============ 8 ============ -->
-  <section class="seg" data-short="Door check">
+  <section class="seg" data-phase="leave" data-short="Door check">
     <div class="seg-head"><span class="num">08</span><h2>Wear the bulky things</h2></div>
-    <p class="why">Boots and a coat eat about a quarter of a suitcase. <strong>Wear them instead</strong> and the bag shuts easily. You also land in Edinburgh already dressed for the weather, which you'll want at seven in the morning.</p>
-    <p class="why"><strong>No winter coat.</strong> It is the one thing people expect to need here and it is the wrong tool. Early October runs about 45–55°F — not cold enough for a winter coat, but wet and very windy, and a heavy coat that soaks through stays wet for two days and becomes something you carry. The thermal top, the fleece and this jacket together are warmer than a coat in that weather, dry overnight, and come apart when a shop is overheated. If you are ever cold, the answer is another layer under the jacket, not a bigger coat.</p>
-    <ul class="list">
+    <div class="p why noreader-extra">Boots and a coat eat about a quarter of a suitcase. <strong>Wear them instead</strong> and the bag shuts easily. You also land in Edinburgh already dressed for the weather, which you'll want at seven in the morning.</div>
+    <div class="p why noreader-extra"><strong>No winter coat.</strong> It is the one thing people expect to need here and it is the wrong tool. Early October runs about 45–55°F — not cold enough for a winter coat, but wet and very windy, and a heavy coat that soaks through stays wet for two days and becomes something you carry. The thermal top, the fleece and this jacket together are warmer than a coat in that weather, dry overnight, and come apart when a shop is overheated. If you are ever cold, the answer is another layer under the jacket, not a bigger coat.</div>
+    <ul class="list worn">
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof hiking boots, already broken in</span><span class="note">Wear them around the house first. New boots on the Quiraing means blisters by day two.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Your inserts — in the boots now, not packed loose</span><span class="note">Loose in a bag is how they get left at home. Put them in the boots you are flying in.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="qty">1</span><span class="name">Waterproof jacket with a hood<span class="darks">darks only</span></span><span class="note">A hood, not an umbrella — far too windy on the islands for an umbrella to survive. This plus the fleece is the coat.</span></label></li>
@@ -923,10 +1078,10 @@
   </section>
 
   <!-- ============ 9 ============ -->
-  <section class="seg" data-short="Skipping the stairs">
+  <section class="seg" data-phase="leave" data-short="Skipping the stairs">
     <div class="seg-head"><span class="num">09</span><h2>Door check</h2></div>
-    <p class="why">Stand by the front door with the suitcase zipped and go through these one at a time. <strong>Every one is something that's genuinely hard to fix once you've left.</strong></p>
-    <ul class="list noq">
+    <div class="p why noreader-extra">Stand by the front door with the suitcase zipped and go through these one at a time. <strong>Every one is something that's genuinely hard to fix once you've left.</strong></div>
+    <ul class="list noq gate">
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Medicines and supplements — in the little bag, in labelled boxes</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">Phone charged, and everything downloaded actually downloaded</span><span class="note">Open one film on airplane mode and check it plays. That's the test.</span></label></li>
       <li><label class="item"><input type="checkbox"><span class="box"></span><span class="name">TripIt opens with the trip in it</span></label></li>
@@ -941,9 +1096,9 @@
   </section>
 
   <!-- ============ 10 ============ -->
-  <section class="seg">
+  <section class="seg" data-phase="arrive">
     <div class="seg-head"><span class="num">10</span><h2>Goal: NOT carrying a huge suitcase upstairs</h2></div>
-    <p class="why">Nothing left to pack — this last screen is for when you're there. Seven different places to sleep in thirteen nights, and almost none of them have an elevator. <strong>The suitcase never leaves the car.</strong> Done this way, arriving somewhere takes about four minutes, you each carry one light bag in, and you never unpack the suitcase once.</p>
+    <div class="p why noreader-extra">Nothing left to pack — this last screen is for when you're there. Seven different places to sleep in thirteen nights, and almost none of them have an elevator. <strong>The suitcase never leaves the car.</strong> Done this way, arriving somewhere takes about four minutes, you each carry one light bag in, and you never unpack the suitcase once.</div>
     <ol class="steps-list">
       <li>
         <span class="s">1</span>
@@ -962,18 +1117,18 @@
         <div><b>Wash day is every fourth day, and it's already packed</b><span>The laundry bag lifts straight out and goes to the machine. Nothing to sort, because nothing white ever went in.</span></div>
       </li>
     </ol>
-    <div class="done-msg"><b>That's the whole system.</b><br>Packed for 13 nights, seven beds and a lot of weather. See you in Edinburgh.</div>
+    <div class="done-msg noreader-extra"><b>That's the whole system.</b><br>Packed for 13 nights, seven beds and a lot of weather. See you in Edinburgh.</div>
   </section>
 
   <div class="nav" id="nav">
     <button class="back" id="back" type="button">Back</button>
     <button class="next" id="next" type="button">Next</button>
   </div>
-  <p class="left" id="left"></p>
+  <div class="p left noreader-extra" id="left"></div>
 
   <aside class="warm">
     <span class="k">Not this trip — the next warm one</span>
-    <p>Three things came off your list that belong to a hot-weather trip rather than to Scotland in October. Nothing here goes in a bag this time. It is written down so it isn't lost, and so you don't have to wonder later whether it was missed.</p>
+    <div class="p noreader-extra">Three things came off your list that belong to a hot-weather trip rather than to Scotland in October. Nothing here goes in a bag this time. It is written down so it isn't lost, and so you don't have to wonder later whether it was missed.</div>
     <ul>
       <li><b>Tan cream</b></li>
       <li><b>Plastic gloves</b> — the ones that go with it</li>
@@ -982,9 +1137,9 @@
   </aside>
 
   <footer class="foot">
-    <p><b>On your phone:</b> open this link, then tap the share button and <b>Add to Home Screen</b>. It opens like an app after that. Ticks are saved on the phone you tick them on — ticking something on a laptop won't show up here, so pick one device and pack from that.</p>
-    <p>Rain figures on the first screen are the share of days that see rain at that place at this time of year — twenty years of records, not a forecast for our actual dates. Mull at 76% is why the rain gear is not optional.</p>
-    <p>Stops and dates come from the Snapshot tab of the Scotland itinerary workbook; the base items and quantities from its Weather &amp; Packing tab, set for washing every four days. The contents of the cosmetics bag in step 2 are your own list, not the workbook's.</p>
+    <div class="p noreader-extra"><b>On your phone:</b> open this link, then tap the share button and <b>Add to Home Screen</b>. It opens like an app after that. Ticks are saved on the phone you tick them on — ticking something on a laptop won't show up here, so pick one device and pack from that.</div>
+    <div class="p noreader-extra">Rain figures on the first screen are the share of days that see rain at that place at this time of year — twenty years of records, not a forecast for our actual dates. Mull at 76% is why the rain gear is not optional.</div>
+    <div class="p noreader-extra">Stops and dates come from the Snapshot tab of the Scotland itinerary workbook; the base items and quantities from its Weather &amp; Packing tab, set for washing every four days. The contents of the cosmetics bag in step 2 are your own list, not the workbook's.</div>
   </footer>
 </div>
 
@@ -992,12 +1147,12 @@
 
 <div class="addwrap" id="addwrap" hidden>
   <div class="addcard" role="dialog" aria-modal="true" aria-labelledby="addtitle">
-    <p class="addtitle" id="addtitle">Add to this step</p>
-    <p class="addsub" id="addsub"></p>
+    <div class="p addtitle noreader-extra" id="addtitle">Add to this step</div>
+    <div class="p addsub noreader-extra" id="addsub"></div>
     <input class="addinput" id="addinput" type="text" autocomplete="off" autocorrect="off"
            autocapitalize="sentences" spellcheck="false" enterkeyhint="done"
            placeholder="What do you want to add?" aria-labelledby="addtitle">
-    <p class="addmsg" id="addmsg"></p>
+    <div class="p addmsg" id="addmsg"></div>
     <div class="addbtns" id="addbtns"></div>
   </div>
 </div>
@@ -1043,6 +1198,7 @@
   var keys = [];
 
   var cur = 0;
+  var doneBefore = false;
 
   var chips = segs.map(function(s, i){
     var b = document.createElement('button');
@@ -1065,7 +1221,9 @@
 
   function paintRail(){
     chips.forEach(function(c, i){
-      c.className = (i === cur) ? 'on' : (segDone(i) ? 'did' : '');
+      c.className = (i === cur) ? 'on'
+                  : (!segBoxes[i].length ? 'none'
+                  : (segDone(i) ? 'did' : ''));
     });
     var c = chips[cur];
     if(c && c.scrollIntoView) c.scrollIntoView({block:'nearest', inline:'center'});
@@ -1152,6 +1310,12 @@
   function go(i, scroll){
     cur = Math.max(0, Math.min(segs.length - 1, i));
     segs.forEach(function(s, k){ s.hidden = (k !== cur); });
+    /* The section owns its phase; the sticky bar and rail live OUTSIDE it,
+       so the value is mirrored onto :root or they keep the old step's hue. */
+    try{
+      document.documentElement.setAttribute(
+        'data-cur', segs[cur].getAttribute('data-phase') || 'gather');
+    }catch(e){}
     paintRail(); paintNav();
     try{ localStorage.setItem(SKEY, String(cur)); }catch(e){}
     if(scroll) jumpToTop();
@@ -1207,8 +1371,36 @@
     boxes.forEach(function(b){
       if(b.getAttribute('data-bound')) return;
       b.setAttribute('data-bound', '1');
-      b.addEventListener('change', function(){ save(); paintMeter(); paintRail(); paintNav(); });
+      b.addEventListener('change', function(){
+        var row = b.parentNode;
+        if(b.checked && row){
+          row.classList.remove('justticked');
+          void row.offsetWidth;              /* restart the animation */
+          row.classList.add('justticked');
+          buzz(8);
+        }
+        var wasDone = doneBefore;
+        save(); paintMeter(); paintRail(); paintNav(); paintResume();
+        /* a step completing is a bigger event than one item, and gets a
+           pattern rather than a tap */
+        if(segDone(cur) && !wasDone) buzz([14, 45, 22]);
+        doneBefore = segDone(cur);
+      });
     });
+  }
+
+  /* Haptics are progressive enhancement and WILL be silent for many
+     people: Safari on iOS does not implement navigator.vibrate at all,
+     so on an iPhone every call here is a no-op. That is why the visual
+     wash exists -- it is the feedback, and this is the bonus. Kept very
+     short, and skipped entirely when the viewer asks for reduced motion. */
+  var CALM = false;
+  try{ CALM = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+  var CANBUZZ = false;
+  try{ CANBUZZ = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'; }catch(e){}
+  function buzz(pattern){
+    if(!CANBUZZ || CALM) return;
+    try{ navigator.vibrate(pattern); }catch(e){}
   }
 
   function save(){
@@ -1219,7 +1411,38 @@
     }catch(e){ /* nothing to do; the page still works */ }
   }
 
-  function repaint(){ save(); paintMeter(); paintRail(); paintNav(); }
+  function repaint(){ save(); paintMeter(); paintRail(); paintNav(); paintResume(); }
+
+  /* ---- Resume: the one thing this page has that no checklist has ----
+     142 items over ten steps, worked in bursts across several days. The
+     real question on reopening is not "how far am I" -- the bar answers
+     that -- it is "which thing was I on". Resume finds the first unticked
+     item in document order, goes to its step, scrolls it under the sticky
+     bar and pulses it. */
+  var resumeB = document.getElementById('resume');
+  function firstUndone(){
+    for(var i = 0; i < boxes.length; i++){ if(!boxes[i].checked) return i; }
+    return -1;
+  }
+  function paintResume(){
+    var i = firstUndone();
+    resumeB.disabled = (i < 0);
+    resumeB.textContent = (i < 0) ? 'All packed' : 'Resume';
+  }
+  resumeB.addEventListener('click', function(){
+    var i = firstUndone();
+    if(i < 0) return;
+    var box = boxes[i], row = box.parentNode;
+    var seg = row.closest ? row.closest('.seg') : null;
+    var k = seg ? segs.indexOf(seg) : -1;
+    if(k >= 0 && k !== cur) go(k, false);
+    buzz(10);
+    try{
+      var barH = anchor ? anchor.getBoundingClientRect().height : 0;
+      window.scrollTo(0, Math.max(0, docTop(row) - barH - 12));
+    }catch(e){}
+    row.classList.remove('found'); void row.offsetWidth; row.classList.add('found');
+  });
 
   document.getElementById('reset').addEventListener('click', function(){
     boxes.forEach(function(b){ b.checked = false; });
@@ -1740,9 +1963,10 @@
 
   paintMeter();
   go(start, false);
+  paintResume();
+  doneBefore = segDone(cur);
 })();
 </script>
-
 
 </body>
 </html>
